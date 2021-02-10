@@ -7,7 +7,7 @@ export default function SocialLoginButton({ text, icon, bgColor, textColor, ...r
         <TouchableOpacity {...rest} activeOpacity={0.8}>
             <View style={[{backgroundColor: bgColor, flexDirection: "row"}, styles.button]}>
                 <Icon name={icon} size={25} color={textColor} />
-                <Text style={{ color: textColor, marginLeft: 30 }}>
+                <Text style={{ color: textColor, marginLeft: 30, fontWeight: 'bold' }}>
                     {text}
                 </Text>
             </View>

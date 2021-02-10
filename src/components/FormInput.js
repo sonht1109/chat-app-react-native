@@ -2,7 +2,7 @@ import React from 'react'
 import { StyleSheet, Text, TextInput, View } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons'
 
-export default function FormInput({secure, icon, placeholder}) {
+export default function FormInput({secure, icon, placeholder, value, onChangeText}) {
     return (
         <View style={styles.inputWrapper}>
             <View style={styles.icon}>
@@ -12,6 +12,9 @@ export default function FormInput({secure, icon, placeholder}) {
             style={styles.textInput}
             placeholder={placeholder}
             secureTextEntry={secure}
+            value={value}
+            onChangeText={onChangeText}
+            autoCapitalize='none'
             />
         </View>
     )
