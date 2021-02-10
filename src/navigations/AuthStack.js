@@ -4,6 +4,7 @@ import OnBoardingPage from '../pages/OnBoarding/index';
 import Login from '../pages/Login/index';
 import Signup from '../pages/Login/Signup';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GoogleSignin } from '@react-native-community/google-signin';
 
 const Stack = createStackNavigator()
 
@@ -12,6 +13,11 @@ function AuthStack() {
     const [isFirstLaunch, setIsFirstLaunch] = useState(null)
 
     useEffect(() => {
+
+        GoogleSignin.configure({
+            webClientId: '455241700923-sbbh5j2ugb89ejeoueih4k45g25dvuck.apps.googleusercontent.com',
+          });
+        
         AsyncStorage.getItem('firstLaunch')
             .then(res => {
                 if (res === null || res === 'true') {

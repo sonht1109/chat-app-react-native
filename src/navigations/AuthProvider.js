@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { createContext } from 'react'
 import auth from '@react-native-firebase/auth';
 import { Alert } from 'react-native';
+import { GoogleSignin } from '@react-native-community/google-signin';
 
 export const AuthContext = createContext()
 
@@ -35,6 +36,16 @@ function AuthProvider({children}){
                 }
                 catch(e){
                     console.warn(e)
+                }
+            },
+            googleLogin: async() => {
+                try{
+                    const {idToken} = await GoogleSignin.signIn()
+                    const googleCredential = auth.GoogleAuthProvider.credential(idToken)
+                    await auth().signInWithCredential(googleCredential)
+                }
+                catch(e){
+                    console.log(e)
                 }
             }
         }}>

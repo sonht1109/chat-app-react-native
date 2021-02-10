@@ -8,7 +8,7 @@ import { AuthContext } from '../../navigations/AuthProvider';
 
 export default function Login({navigation}) {
 
-    const {login, setUser} = useContext(AuthContext)
+    const {login, googleLogin} = useContext(AuthContext)
 
     const [data, setData] = useState({
         email: '',
@@ -21,7 +21,7 @@ export default function Login({navigation}) {
                 <Icon name="chatbubbles-outline" size={100} color="#3c5898" />
             </View>
 
-            <Text style={styles.title}>RN Chat App</Text>
+            <Text style={[styles.title, styles.customFont]}>RN Chat App</Text>
 
             <View>
                 <View style={{ marginVertical: 10 }}>
@@ -68,9 +68,10 @@ export default function Login({navigation}) {
                 textColor="#e34a39"
                 bgColor="#ffbfba"
                 style={{ marginVertical: 10 }}
+                onPress={() => googleLogin()}
             />
 
-            <Text style={styles.forgotPassword} onPress={() => {navigation.navigate('Signup')}}>
+            <Text style={[styles.forgotPassword]} onPress={() => {navigation.navigate('Signup')}}>
                 Don't have an account ? Sign up here
             </Text>
         </View>
@@ -97,5 +98,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: "#3c5898",
         marginVertical: 10
+    },
+    customFont: {
+        fontFamily: 'NunitoSans'
     }
 })
