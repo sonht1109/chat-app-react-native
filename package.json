@@ -1,5 +1,5 @@
 {
-  "name": "chatApp",
+  "name": "chatapp",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -19,6 +19,7 @@
     "@react-navigation/stack": "^5.14.2",
     "react": "16.13.1",
     "react-native": "0.63.4",
+    "react-native-fbsdk": "^3.0.0",
     "react-native-gesture-handler": "^1.10.0",
     "react-native-onboarding-swiper": "^1.1.4",
     "react-native-reanimated": "^1.13.2",
@@ -38,10 +39,5 @@
   },
   "jest": {
     "preset": "react-native"
-  },
-  "rnpm": {
-    "assets": [
-      "./assets/fonts/"
-    ]
   }
 }
