@@ -52,6 +52,7 @@ function AuthProvider({ children }) {
                     await auth().signInWithEmailAndPassword(email, password)
                 }
                 catch (e) {
+                    // Alert.alert('Email login: ', e.code)
                     console.warn(e)
                 }
             },
@@ -76,12 +77,12 @@ function AuthProvider({ children }) {
             googleLogin: async () => {
                 try {
                     const { idToken } = await GoogleSignin.signIn()
-                    await saveCredential(auth.GoogleAuthProvider.PROVIDER_ID, idToken)
+                    // await saveCredential(auth.GoogleAuthProvider.PROVIDER_ID, idToken)
                     const googleCredential = auth.GoogleAuthProvider.credential(idToken)
                     await auth().signInWithCredential(googleCredential)
                 }
                 catch (e) {
-                    console.log(e)
+                    console.warn(e)
                 }
             },
             facebookLogin: async () => {
@@ -97,7 +98,7 @@ function AuthProvider({ children }) {
                         throw 'Something went wrong obtaining access token'
                     }
 
-                    await saveCredential(auth.FacebookAuthProvider.PROVIDER_ID, data.accessToken)
+                    // await saveCredential(auth.FacebookAuthProvider.PROVIDER_ID, data.accessToken)
 
                     await fetch('https://graph.facebook.com/v2.5/me?fields=email,first_name,last_name,friends&access_token=' + data.accessToken)
                         .then(res => res.json())

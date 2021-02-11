@@ -22,10 +22,10 @@ export default function Signup({navigation}) {
     return (
         <View style={styles.container}>
             <View style={styles.logoWrapper}>
-                <Icon name="chatbubbles-outline" size={100} color="#3c5898" />
+                <Icon name="chatbox-ellipses-outline" size={100} color="#3c5898" />
             </View>
 
-            <Text style={styles.title}>RN Chat App</Text>
+            <Text style={styles.title}>Mowx Social</Text>
 
             <View>
                 <View style={{ marginVertical: 10 }}>
@@ -91,7 +91,8 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontSize: 30,
         fontWeight: "bold",
-        marginVertical: 20
+        marginVertical: 20,
+        color: "#3c5898"
     },
     forgotPassword: {
         textAlign: 'center',
