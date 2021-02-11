@@ -13,7 +13,6 @@ function AuthStack() {
     const [isFirstLaunch, setIsFirstLaunch] = useState(null)
 
     useEffect(() => {
-
         GoogleSignin.configure({
             webClientId: '455241700923-sbbh5j2ugb89ejeoueih4k45g25dvuck.apps.googleusercontent.com',
           });
