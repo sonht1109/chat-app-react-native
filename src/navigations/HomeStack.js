@@ -51,7 +51,7 @@ export default function HomeStack() {
                                 fontSize: 18, color: "#3c5898"
                             }}>Post</Text>
                         </TouchableOpacity>
-                    )
+                    ),
                 })}
             />
         </Stack.Navigator>
