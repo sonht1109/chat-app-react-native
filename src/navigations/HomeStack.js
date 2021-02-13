@@ -13,7 +13,7 @@ export default function HomeStack() {
             <Stack.Screen
                 name='Home' component={Home}
                 options={({ navigation }) => ({
-                    title: "Mowx Social",
+                    headerTitle: () => <Icon name="planet-outline" color="#3c5898" size={45} /> ,
                     headerTitleStyle: {
                         fontSize: 18,
                         color: "#3c5898",

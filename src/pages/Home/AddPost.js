@@ -15,18 +15,6 @@ export default function AddPost({ navigation }) {
     const [transferred, setTransferred] = useState(-1)
     const {user} = useContext(AuthContext)
 
-    // useLayoutEffect(() => {
-    //     const parent = navigation.dangerouslyGetParent()
-    //     parent.setOptions({
-    //       tabBarVisible: false
-    //     })
-    //     return () => {
-    //       parent.setOptions({
-    //         tabBarVisible: true
-    //       })
-    //     }
-    //   }, [navigation])
-
     const onChooseFromCamera = () => {
         ImagePicker.openCamera({
             cropping: true,

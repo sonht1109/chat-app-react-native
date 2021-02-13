@@ -45,7 +45,8 @@ export default function MainStack(){
             options={({route}) => ({
                 title: "Chats",
                 tabBarIcon: ({size, color})=><Icon name="chatbox-ellipses-outline"
-                size={size} color={color} />
+                size={size} color={color} />,
+                tabBarVisible: tabbarVisibility(route)
             })}
             />
             <Tab.Screen
