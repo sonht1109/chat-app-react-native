@@ -1,17 +1,18 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Alert, FlatList, Image, Text, TouchableOpacity, View } from 'react-native'
 import * as S from '../../styles/HomeStyled'
-import posts from '../../posts'
 import Icon from 'react-native-vector-icons/Ionicons'
 import firestore from '@react-native-firebase/firestore';
 import { AuthContext } from '../../navigations/AuthProvider';
+import storage from '@react-native-firebase/storage';
+import Skeleton from './Skeleton';
 
 export default function Home() {
 
     const [posts, setPosts] = useState([])
     const [loading, setLoading] = useState(true)
     const [onRefresh, setOnRefresh] = useState(false)
-    const { user } = useContext(AuthContext)
+    const { user } = useContext(AuthContext) 
 
     const fetchPosts = async () => {
         let arr = []
@@ -36,6 +37,7 @@ export default function Home() {
                     })
                 })
                 setPosts(arr)
+                if(loading) setLoading(false)
             })
             .catch(e => console.log('Error in fetch posts', e))
     }
@@ -47,21 +49,46 @@ export default function Home() {
     const onDeletePost = (id) => {
         Alert.alert('Delete post', 'Are you sure ?', [
             {
-                text: "Cancel"
+                text: "Cancel",
+                style: "cancel"
             },
             {
                 text: "Yes",
-                onPress: async () => {
-                    await firestore()
-                    .collection('posts')
-                    .doc(id)
-                    .delete()
-                    .then(() => Alert.alert('Deleted !'))
-                    .then(() => setOnRefresh(prev => !prev))
-                    .catch(e => console.log('Err in deleting post', e))
+                onPress: () => {
+                    onDeleteImageFromFirebaseStore(id)
                 }
             }
         ])
+    }
+
+    const onDeleteImageFromFirebaseStore = async (id) => {
+        await firestore()
+            .collection('posts')
+            .doc(id)
+            .get()
+            .then(documentSnapshot => {
+                const { postImg } = documentSnapshot.data()
+                if (postImg) {
+                    const storageRef = storage().refFromURL(postImg)
+                    const imageRef = storage().ref(storageRef.fullPath)
+                    imageRef
+                        .delete()
+                        .catch(e => console.log('Err in delete img', e))
+                }
+            })
+        await onDeletePostDocument(id)
+    }
+
+    const onDeletePostDocument = async (id) => {
+        await firestore()
+            .collection('posts')
+            .doc(id)
+            .delete()
+            .then(() => {
+                Alert.alert('Post deleted !')
+                setOnRefresh(prev => !prev)
+            })
+            .catch(e => console.log('Err in deleting post', e))
     }
 
     const renderItem = ({ item }) => {
@@ -103,7 +130,7 @@ export default function Home() {
                     {
                         item.userId === user.uid &&
                         <TouchableOpacity style={{ marginLeft: 'auto' }}
-                        onPress={() => onDeletePost(item.id)}>
+                            onPress={() => onDeletePost(item.id)}>
                             <View style={{ flexDirection: "row" }}>
                                 <Icon name="trash-outline" size={24} color="#3c5898" />
                             </View>
@@ -116,14 +143,18 @@ export default function Home() {
 
     return (
         <S.Container bgColor="#fff">
-            <FlatList
-                // refreshing={true}
-                // onRefresh={() => fetchPosts()}
-                data={posts}
-                keyExtractor={item => item.id.toString()}
-                renderItem={renderItem}
-                contentContainerStyle={{ paddingHorizontal: 20 }}
-            />
+            {
+                !loading ?
+                    <FlatList
+                        // refreshing={true}
+                        // onRefresh={() => fetchPosts()}
+                        data={posts}
+                        keyExtractor={item => item.id.toString()}
+                        renderItem={renderItem}
+                        contentContainerStyle={{ paddingHorizontal: 20 }}
+                    /> :
+                <Skeleton />
+            }
         </S.Container>
     )
 }
