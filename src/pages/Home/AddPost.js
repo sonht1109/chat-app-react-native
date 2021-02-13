@@ -1,16 +1,19 @@
-import React, { useLayoutEffect, useState } from 'react'
+import React, { useContext, useLayoutEffect, useState } from 'react'
 import { ActivityIndicator, Alert, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import * as S from '../../styles/HomeStyled'
 import ActionButton from 'react-native-action-button';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
 import storage from '@react-native-firebase/storage';
+import firestore from '@react-native-firebase/firestore';
+import { AuthContext } from '../../navigations/AuthProvider';
 
 export default function AddPost({ navigation }) {
 
     const [text, setText] = useState('')
     const [image, setImage] = useState(null)
     const [transferred, setTransferred] = useState(-1)
+    const {user} = useContext(AuthContext)
 
     useLayoutEffect(() => {
         const parent = navigation.dangerouslyGetParent()
@@ -44,14 +47,16 @@ export default function AddPost({ navigation }) {
             .catch(e => console.log(e))
     }
 
-    const onSubmit = async () => {
+    const onUploadPostImage = async () => {
+        let imageUrl = null
         if (image) {
             setTransferred(0)
             const fileName = image.substring(image.lastIndexOf('/') + 1)
             const extension = fileName.substring(fileName.lastIndexOf('.') + 1)
             const timeStamp = fileName.substring(0, fileName.lastIndexOf('.')) + '-' + Date.now()
 
-            const task = storage().ref(timeStamp + '.' + extension).putFile(image)
+            const storageRef = storage().ref(`postImages/${timeStamp}.${extension}`)
+            const task = storageRef.putFile(image)
 
             task.on('state_changed', taskSnapshot => {
                 let bytesTransferred = taskSnapshot.bytesTransferred
@@ -62,11 +67,31 @@ export default function AddPost({ navigation }) {
             try {
                 await task
                 setTransferred(-1)
-                Alert.alert("Uploaded !")
+                imageUrl = await storageRef.getDownloadURL()
             }
             catch (e) {
                 console.log(e)
             }
+        }
+        return imageUrl
+    }
+
+    const onSubmit = async()=>{
+        const imageUrl = await onUploadPostImage()
+        if(text || imageUrl){
+            firestore()
+            .collection('posts')
+            .add({
+                date: firestore.Timestamp.fromDate(new Date()),
+                userId: user.uid,
+                post: text,
+                postImg: imageUrl,
+                likes: 0,
+                comments: 0,
+            })
+            .then(() => Alert.alert('Uploaded !'))
+            .then(() => navigation.navigate("Home"))
+            .catch(e => console.log('Err in onSubmit', e))
         }
     }
 

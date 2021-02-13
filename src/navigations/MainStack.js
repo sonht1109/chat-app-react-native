@@ -1,9 +1,9 @@
 import React from 'react'
-import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeStack from './HomeStack';
 import ProfileStack from './ProfileStack';
 import Icon from 'react-native-vector-icons/Ionicons'
+import ChatsStack from './ChatsStack';
 
 const Tab = createBottomTabNavigator()
 
@@ -20,6 +20,15 @@ export default function MainStack(){
             options={{
                 title: "Home",
                 tabBarIcon: ({size, color})=><Icon name="newspaper-outline" size={size} color={color}/>
+            }}
+            />
+            <Tab.Screen
+            name="ChatsStack"
+            component={ChatsStack}
+            options={{
+                title: "Chats",
+                tabBarIcon: ({size, color})=><Icon name="chatbox-ellipses-outline"
+                size={size} color={color} />
             }}
             />
             <Tab.Screen

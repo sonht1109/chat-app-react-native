@@ -22,7 +22,7 @@ export default function Signup({navigation}) {
     return (
         <View style={styles.container}>
             <View style={styles.logoWrapper}>
-                <Icon name="chatbox-ellipses-outline" size={100} color="#3c5898" />
+                <Icon name="planet-outline" size={100} color="#3c5898" />
             </View>
 
             <Text style={styles.title}>Mowx Social</Text>
