@@ -4,10 +4,24 @@ import HomeStack from './HomeStack';
 import ProfileStack from './ProfileStack';
 import Icon from 'react-native-vector-icons/Ionicons'
 import ChatsStack from './ChatsStack';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 const Tab = createBottomTabNavigator()
 
+const screensWithHiddenTabbar = [
+    "AddPost", "ChatDetail"
+]
+
 export default function MainStack(){
+
+    const tabbarVisibility = (route) => {
+        const routeName = getFocusedRouteNameFromRoute(route)
+        if(screensWithHiddenTabbar.includes(routeName)){
+            return false
+        }
+        return true
+    }
+
     return(
         <Tab.Navigator
             tabBarOptions={{
@@ -17,19 +31,22 @@ export default function MainStack(){
             <Tab.Screen
             name="HomeStack"
             component={HomeStack}
-            options={{
-                title: "Home",
-                tabBarIcon: ({size, color})=><Icon name="newspaper-outline" size={size} color={color}/>
-            }}
+            options={({route}) => (
+                {
+                    title: "Home",
+                    tabBarIcon: ({size, color})=><Icon name="newspaper-outline" size={size} color={color}/>,
+                    tabBarVisible: tabbarVisibility(route)
+                }
+            )}
             />
             <Tab.Screen
             name="ChatsStack"
             component={ChatsStack}
-            options={{
+            options={({route}) => ({
                 title: "Chats",
                 tabBarIcon: ({size, color})=><Icon name="chatbox-ellipses-outline"
                 size={size} color={color} />
-            }}
+            })}
             />
             <Tab.Screen
             name="ProfileStack"
