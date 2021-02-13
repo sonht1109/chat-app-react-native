@@ -44,6 +44,7 @@ export const InteractText = styled.Text`
     font-weight: 700;
     margin-left: 5px;
 `
+
 export const AddPostContainer = styled(Container)`
     padding: 20px;
 `
@@ -51,5 +52,18 @@ export const AddPostContainer = styled(Container)`
 export const AddPostInput = styled.TextInput`
     flex: 1;
     width: 100%;
-    font-size: 24px;
+    font-size: 20px;
+`
+
+export const AddPostHeader = styled.View`
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+`
+
+export const AddPostHeaderLoading = styled.View`
+    justify-content: center;
+    align-items: center;
+    flex-direction: row
 `

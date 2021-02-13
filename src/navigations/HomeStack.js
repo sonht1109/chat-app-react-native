@@ -33,26 +33,9 @@ export default function HomeStack() {
             <Stack.Screen
                 name="AddPost"
                 component={AddPost}
-                options={({ navigation }) => ({
-                    title: '',
-                    headerStyle: {
-                        elevation: 0,
-                        backgroundColor: "transparent"
-                    },
-                    headerLeft: () => <Icon name="chevron-back" color="#3c5898" size={30}
-                        onPress={() => navigation.goBack()} />,
-                    headerLeftContainerStyle: {
-                        marginLeft: 10
-                    },
-                    headerRight: () => (
-                        <TouchableOpacity>
-                            <Text style={{
-                                marginRight: 20, fontWeight: 'bold',
-                                fontSize: 18, color: "#3c5898"
-                            }}>Post</Text>
-                        </TouchableOpacity>
-                    ),
-                })}
+                options={{
+                    headerShown: false
+                }}
             />
         </Stack.Navigator>
     )
