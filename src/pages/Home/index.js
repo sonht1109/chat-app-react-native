@@ -1,18 +1,21 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Alert, FlatList, Image, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Dimensions, FlatList, Image, Text, TouchableOpacity, View } from 'react-native'
 import * as S from '../../styles/HomeStyled'
 import Icon from 'react-native-vector-icons/Ionicons'
 import firestore from '@react-native-firebase/firestore';
 import { AuthContext } from '../../navigations/AuthProvider';
 import storage from '@react-native-firebase/storage';
 import Skeleton from './Skeleton';
+import ScaledImage from '../../components/ScaledImage';
+
+const { width } = Dimensions.get('window')
 
 export default function Home() {
 
     const [posts, setPosts] = useState([])
     const [loading, setLoading] = useState(true)
     const [onRefresh, setOnRefresh] = useState(false)
-    const { user } = useContext(AuthContext) 
+    const { user } = useContext(AuthContext)
 
     const fetchPosts = async () => {
         let arr = []
@@ -37,7 +40,7 @@ export default function Home() {
                     })
                 })
                 setPosts(arr)
-                if(loading) setLoading(false)
+                if (loading) setLoading(false)
             })
             .catch(e => console.log('Error in fetch posts', e))
     }
@@ -104,15 +107,16 @@ export default function Home() {
                             </Text>
                         </View>
                     </View>
-                    <S.PostText>
-                        <Text>
-                            {item.post}
-                        </Text>
-                    </S.PostText>
+                    {item.post !== '' &&
+                        <S.PostText>
+                            <Text>
+                                {item.post}
+                            </Text>
+                        </S.PostText>}
                 </S.Post>
                 {
                     item.postImg &&
-                    <S.PostImage source={{ uri: item.postImg }} />
+                    <ScaledImage uri={item.postImg} width={width - 40} />
                 }
                 <S.PostInteract>
                     <TouchableOpacity>
@@ -153,7 +157,7 @@ export default function Home() {
                         renderItem={renderItem}
                         contentContainerStyle={{ paddingHorizontal: 20 }}
                     /> :
-                <Skeleton />
+                    <Skeleton />
             }
         </S.Container>
     )

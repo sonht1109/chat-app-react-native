@@ -3,7 +3,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Home from '../pages/Home/index';
 import Icon from 'react-native-vector-icons/Ionicons'
 import AddPost from '../pages/Home/AddPost';
-import { Text, TouchableOpacity } from 'react-native';
 
 const Stack = createStackNavigator()
 

@@ -27,11 +27,6 @@ export const PostText = styled.View`
     margin: 10px 0;
 `
 
-export const PostImage = styled.Image`
-    width: 100%;
-    height: 250px;
-`
-
 export const PostInteract = styled.View`
     padding: 20px;
     flex-direction: row;
