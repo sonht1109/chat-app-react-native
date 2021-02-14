@@ -11,7 +11,7 @@ import timeConvertFromNow from '../../timeConvertFromNow';
 
 const { width } = Dimensions.get('window')
 
-export default function Home() {
+export default function Home({navigation, profile}) {
 
     const [posts, setPosts] = useState([])
     const [loading, setLoading] = useState(true)
@@ -20,7 +20,37 @@ export default function Home() {
 
     const fetchPosts = async () => {
         let arr = []
-        await firestore()
+        if(profile){
+            await firestore()
+            .collection('posts')
+            .where('userId', '==', user.uid)
+            .orderBy('date', 'desc')
+            .get()
+            .then(querySnapshot => {
+                querySnapshot.forEach(doc => {
+                    const { date, userId, avt, post, postImg, likes, comments } = doc.data()
+                    arr.push({
+                        id: doc.id,
+                        date: date.seconds,
+                        userId,
+                        user: 'Hoang Thai Son',
+                        avt,
+                        post,
+                        postImg,
+                        likes,
+                        comments,
+                        liked: false
+                    })
+                })
+            })
+            .then(() => {
+                setPosts(arr)
+                if(loading) setLoading(false)
+            })
+            .catch(e => console.log('Err in fetching posts', e))
+        }
+        else {
+            await firestore()
             .collection('posts')
             .orderBy('date', 'desc')
             .get()
@@ -40,14 +70,21 @@ export default function Home() {
                         liked: false
                     })
                 })
-                setPosts(arr)
-                if (loading) setLoading(false)
             })
-            .catch(e => console.log('Error in fetch posts', e))
+            .then(() => {
+                setPosts(arr)
+                if(loading) setLoading(false)
+            })
+            .catch(e => console.log('Err in fetching posts', e))
+        }
     }
 
     useEffect(() => {
         fetchPosts()
+        navigation.addListener("focus", () => {
+            console.log('navigation listener');
+            setOnRefresh(prev => !prev)
+        })
     }, [onRefresh])
 
     const onDeletePost = (id) => {
@@ -181,8 +218,6 @@ export default function Home() {
             {
                 !loading ?
                     <FlatList
-                        // refreshing={true}
-                        // onRefresh={() => fetchPosts()}
                         data={posts}
                         keyExtractor={item => item.id.toString()}
                         renderItem={renderItem}

@@ -1,5 +1,5 @@
 import React, { useContext, useLayoutEffect, useState } from 'react'
-import { ActivityIndicator, Alert, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, Dimensions, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import * as S from '../../styles/HomeStyled'
 import ActionButton from 'react-native-action-button';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -7,6 +7,8 @@ import ImagePicker from 'react-native-image-crop-picker';
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
 import { AuthContext } from '../../navigations/AuthProvider';
+
+const {height} = Dimensions.get('window')
 
 export default function AddPost({ navigation }) {
 
@@ -77,14 +79,19 @@ export default function AddPost({ navigation }) {
                 likes: [],
                 comments: [],
             })
-            .then(() => Alert.alert('Uploaded !'))
-            .then(() => navigation.navigate("Home"))
+            .then(() => Alert.alert('Post uploaded !', '', [
+                {
+                    text: 'OK',
+                    onPress: () => navigation.navigate("Home")
+                }
+            ]))
             .catch(e => console.log('Err in onSubmit', e))
         }
     }
 
     return (
-        <S.AddPostContainer bgColor="#dfe6f5">
+        <ScrollView contentContainerStyle={{minHeight: height - 20}}>
+            <S.AddPostContainer bgColor="#dfe6f5">
             <S.AddPostHeader>
                 <Icon name="chevron-back"
                     size={25}
@@ -114,7 +121,7 @@ export default function AddPost({ navigation }) {
             {
                 image &&
                 <Image source={{ uri: image }}
-                    style={{ width: "100%", height: 300 }} />
+                    style={{ width: "100%", height: 200 }} />
             }
             <ActionButton buttonColor="rgba(231,76,60,1)">
                 <ActionButton.Item buttonColor='#9b59b6' title="Take photo" onPress={onChooseFromCamera}>
@@ -125,6 +132,7 @@ export default function AddPost({ navigation }) {
                 </ActionButton.Item>
             </ActionButton>
         </S.AddPostContainer>
+        </ScrollView>
     )
 }
 

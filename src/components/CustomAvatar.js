@@ -4,6 +4,7 @@ import {Avatar} from 'react-native-paper'
 export default function CustomAvatar({displayName, uri, size}) {
 
     const [label, setLabel] = useState('')
+    console.log(displayName);
 
     useEffect(() => {
         if(displayName){

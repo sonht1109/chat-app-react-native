@@ -4,19 +4,25 @@ import CustomButton from '../../components/CustomButton';
 import Icon from 'react-native-vector-icons/Ionicons'
 import FormInput from '../../components/FormInput';
 import { AuthContext } from '../../navigations/AuthProvider';
+import { displayName } from 'react-native/Libraries/ReactNative/RootTagContext';
 
 export default function Signup({navigation}) {
 
     const [data, setData] = useState({
         email: "",
         password: "",
-        confirmPassword: ""
+        confirmPassword: "",
+        displayName: ""
     })
 
     const {signup} = useContext(AuthContext)
 
     const checkSignUp = () => {
         return data.password === data.confirmPassword
+    }
+
+    const checkName = () => {
+        return data.displayName.length > 0
     }
 
     return (
@@ -30,8 +36,8 @@ export default function Signup({navigation}) {
             <View>
                 <View style={{ marginVertical: 10 }}>
                     <FormInput
-                        placeholder="Username"
-                        icon="person-outline"
+                        placeholder="Email"
+                        icon="mail-outline"
                         value={data.email}
                         onChangeText={(val) => setData({...data, email: val})}
                     />
@@ -54,6 +60,14 @@ export default function Signup({navigation}) {
                         onChangeText={(val) => setData({...data, confirmPassword: val})}
                     />
                 </View>
+                <View style={{ marginVertical: 10 }}>
+                    <FormInput
+                        placeholder="Display Name"
+                        icon="person-outline"
+                        value={data.displayName}
+                        onChangeText={(val) => setData({...data, displayName: val})}
+                    />
+                </View>
 
                 <CustomButton
                     bgColor="#3c5898"
@@ -61,10 +75,13 @@ export default function Signup({navigation}) {
                     textColor="white"
                     style={{ marginVertical: 10 }}
                     onPress={() => {
-                        if(checkSignUp()){
-                            signup(data.email, data.password)
+                        if(!checkSignUp()){
+                            Alert.alert('Password not matches')
                         }
-                        else Alert.alert('Password not matches')
+                        if(!checkName()){
+                            Alert.alert('Name must be filled')
+                        }
+                        else signup(data.email, data.password, data.displayName)
                     }}
                 />
 

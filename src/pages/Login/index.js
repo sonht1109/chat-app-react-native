@@ -1,10 +1,11 @@
 import React, { useContext, useState } from 'react'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import CustomButton from '../../components/CustomButton';
 import SocialLoginButton from '../../components/SocialLoginButton';
 import Icon from 'react-native-vector-icons/Ionicons'
 import FormInput from '../../components/FormInput';
 import { AuthContext } from '../../navigations/AuthProvider';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export default function Login({navigation}) {
 

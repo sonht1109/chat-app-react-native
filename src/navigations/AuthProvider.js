@@ -5,6 +5,7 @@ import { Alert } from 'react-native';
 import { GoogleSignin } from '@react-native-community/google-signin';
 import { LoginManager, AccessToken } from 'react-native-fbsdk';
 // import AsyncStorage from '@react-native-async-storage/async-storage';
+import firestore from '@react-native-firebase/firestore';
 
 export const AuthContext = createContext()
 
@@ -56,9 +57,20 @@ function AuthProvider({ children }) {
                     console.warn(e)
                 }
             },
-            signup: async (email, password) => {
+            signup: async (email, password, displayName) => {
+                console.log(displayName);
                 try {
                     await auth().createUserWithEmailAndPassword(email, password)
+                    .then(() => {
+                        firestore().collection('users').doc(auth().currentUser.uid)
+                        .set({
+                            displayName: displayName,
+                            email: email,
+                            createAt: firestore.Timestamp.fromDate(new Date()),
+                            avt: null,
+                        })
+                    })
+                    .catch(e => console.log('sign up with email', e))
                     Alert.alert('Sign up successful !')
                 }
                 catch (e) {
@@ -80,13 +92,14 @@ function AuthProvider({ children }) {
                     // await saveCredential(auth.GoogleAuthProvider.PROVIDER_ID, idToken)
                     const googleCredential = auth.GoogleAuthProvider.credential(idToken)
                     await auth().signInWithCredential(googleCredential)
+                    .then(res => console.log(res))
                 }
                 catch (e) {
                     console.warn(e)
                 }
             },
             facebookLogin: async () => {
-                let email = ''
+                // let email = ''
                 try {
                     const result = await LoginManager.logInWithPermissions(['public_profile', 'email'])
                     if (result.isCancelled) {
@@ -100,10 +113,10 @@ function AuthProvider({ children }) {
 
                     // await saveCredential(auth.FacebookAuthProvider.PROVIDER_ID, data.accessToken)
 
-                    await fetch('https://graph.facebook.com/v2.5/me?fields=email,first_name,last_name,friends&access_token=' + data.accessToken)
-                        .then(res => res.json())
-                        .then(json => email = json.email)
-                        .catch(err => console.log(err))
+                    // await fetch('https://graph.facebook.com/v2.5/me?fields=email,first_name,last_name,friends&access_token=' + data.accessToken)
+                    //     .then(res => res.json())
+                    //     .then(json => email = json.email)
+                    //     .catch(err => console.log(err))
 
                     const facebookCredential = auth.FacebookAuthProvider.credential(data.accessToken)
                     await auth().signInWithCredential(facebookCredential)

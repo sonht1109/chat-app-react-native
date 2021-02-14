@@ -1,19 +1,33 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { AuthContext } from '../../navigations/AuthProvider';
 import CustomAvatar from '../../components/CustomAvatar';
 import Home from '../Home';
+import firestore from '@react-native-firebase/firestore';
 
 export default function Profile({ route, navigation }) {
   const { user, logout } = useContext(AuthContext)
-  console.log(user)
+  // console.log(user)
+
+  const [userData, setUserData] = useState(null)
+
+  const fetchUserData = async() => {
+    await firestore()
+    .collection('users')
+    .doc(route.params ? route.params.userId : user.uid)
+    .get()
+    .then(doc => setUserData(doc.data()))
+    .catch(e => console.log('err in fetch user', e)) 
+  }
 
   useEffect(() => {
-
+    fetchUserData()
   }, [])
 
+  console.log(userData);
+
   const renderButtons = () => {
-    if (route.params && route.params.userId === userId) {
+    if (route.params && route.params.userId === user.uid) {
       return (
         <View style={styles.groupButton}>
           <TouchableOpacity activeOpacity={0.8}>
@@ -40,10 +54,10 @@ export default function Profile({ route, navigation }) {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
-        <View style={{marginTop: 40}}>
+        <View style={{marginVertical: 40}}>
           {/* avatar */}
           <View style={{ alignItems: 'center' }}>
-            <CustomAvatar size={120} displayName={user.displayName} />
+            <CustomAvatar size={120} displayName={userData?.displayName} />
             <Text style={styles.displayName}>{user.displayName}</Text>
             {
               !user.about && <Text style={styles.about}>Love vi </Text>
@@ -67,7 +81,7 @@ export default function Profile({ route, navigation }) {
           </View>
         </View>
         {/* posts */}
-        <Home />
+        <Home navigation={navigation} profile={true} />
       </ScrollView>
     </SafeAreaView>
   )
