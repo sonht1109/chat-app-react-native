@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Alert, Dimensions, FlatList, Image, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Dimensions, FlatList, Image, Text, TouchableOpacity, View, Animated } from 'react-native'
 import * as S from '../../styles/HomeStyled'
 import Icon from 'react-native-vector-icons/Ionicons'
 import firestore from '@react-native-firebase/firestore';
@@ -7,6 +7,7 @@ import { AuthContext } from '../../navigations/AuthProvider';
 import storage from '@react-native-firebase/storage';
 import Skeleton from './Skeleton';
 import ScaledImage from '../../components/ScaledImage';
+import timeConvertFromNow from '../../timeConvertFromNow';
 
 const { width } = Dimensions.get('window')
 
@@ -94,7 +95,27 @@ export default function Home() {
             .catch(e => console.log('Err in deleting post', e))
     }
 
+    const onHandleLike = async (iconAnimated, id, isLiked) => {
+        iconAnimated.setValue(0)
+        Animated.timing(iconAnimated, {
+            duration: 200,
+            toValue: 1,
+            useNativeDriver: true,
+        }).start(() =>  setOnRefresh(prev => !prev))
+        await firestore()
+            .doc(`posts/${id}`)
+            .update({
+                likes: !isLiked ? firestore.FieldValue.arrayUnion(user.uid) : firestore.FieldValue.arrayRemove(user.uid)
+            })
+            .then(() => {
+                
+            })
+            .catch(e => console.log('handle like', e))
+    }
+
     const renderItem = ({ item }) => {
+        const isLiked = item.likes.includes(user.uid)
+        const iconAnimated = new Animated.Value(0)
         return (
             <S.PostWrapper>
                 <S.Post>
@@ -103,7 +124,7 @@ export default function Home() {
                         <View>
                             <Text style={{ fontWeight: "bold" }}>{item.user}</Text>
                             <Text style={{ fontSize: 12, color: "#666" }}>
-                                {item.date}
+                                {timeConvertFromNow(item.date)}
                             </Text>
                         </View>
                     </View>
@@ -119,16 +140,26 @@ export default function Home() {
                     <ScaledImage uri={item.postImg} width={width - 40} />
                 }
                 <S.PostInteract>
-                    <TouchableOpacity>
-                        <View style={{ flexDirection: "row", marginRight: 40, alignItems: 'center' }}>
-                            <Icon name={item.liked ? "heart" : "heart-outline"} size={24} color="#3c5898" />
-                            <S.InteractText>{item.likes}</S.InteractText>
-                        </View>
+                    <TouchableOpacity
+                    onPress={() => onHandleLike(iconAnimated, item.id, isLiked)}
+                    activeOpacity={0.8}
+                    >
+                        <Animated.View style={{ flexDirection: "row", marginRight: 40, alignItems: 'center' }}>
+                            <Animated.View style={{
+                                transform: [{scale: iconAnimated.interpolate({
+                                    inputRange: [0, 0.5, 1],
+                                    outputRange: [1, 1.5, 1]
+                                })}]
+                            }}>
+                            <Icon name={isLiked ? "heart" : "heart-outline"} size={24} color="#3c5898" />
+                            </Animated.View>
+                            <S.InteractText>{item.likes.length}</S.InteractText>
+                        </Animated.View>
                     </TouchableOpacity>
                     <TouchableOpacity>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
                             <Icon name="chatbox-outline" size={24} color="#3c5898" />
-                            <S.InteractText>{item.comments}</S.InteractText>
+                            <S.InteractText>{item.comments.length}</S.InteractText>
                         </View>
                     </TouchableOpacity>
                     {

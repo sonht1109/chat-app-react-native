@@ -74,8 +74,8 @@ export default function AddPost({ navigation }) {
                 userId: user.uid,
                 post: text,
                 postImg: imageUrl,
-                likes: 0,
-                comments: 0,
+                likes: [],
+                comments: [],
             })
             .then(() => Alert.alert('Uploaded !'))
             .then(() => navigation.navigate("Home"))
