@@ -3,6 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Home from '../pages/Home/index';
 import Icon from 'react-native-vector-icons/Ionicons'
 import AddPost from '../pages/Home/AddPost';
+import Profile from '../pages/Profile/index';
 
 const Stack = createStackNavigator()
 
@@ -34,6 +35,17 @@ export default function HomeStack() {
                 component={AddPost}
                 options={{
                     headerShown: false
+                }}
+            />
+            <Stack.Screen
+                name="UserProfile"
+                component={Profile}
+                options={{
+                    title: '',
+                    headerStyle: {
+                        elevation: 0,
+                        shadowOpacity: 0
+                    }
                 }}
             />
         </Stack.Navigator>

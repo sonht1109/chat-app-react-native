@@ -18,11 +18,17 @@ export default function Signup({navigation}) {
     const {signup} = useContext(AuthContext)
 
     const checkSignUp = () => {
-        return data.password === data.confirmPassword
-    }
-
-    const checkName = () => {
-        return data.displayName.length > 0
+        let mess = ''
+        if(!data.password === data.confirmPassword){
+            mess = 'Password not matches'
+        }
+        else if(data.password.length < 6){
+            mess = 'Password must be at least 6 character long'
+        }
+        else if(data.displayName.length === 0){
+            mess = 'Displayname must be filled'
+        }
+        return mess
     }
 
     return (
@@ -75,11 +81,9 @@ export default function Signup({navigation}) {
                     textColor="white"
                     style={{ marginVertical: 10 }}
                     onPress={() => {
-                        if(!checkSignUp()){
-                            Alert.alert('Password not matches')
-                        }
-                        if(!checkName()){
-                            Alert.alert('Name must be filled')
+                        const mess = checkSignUp()
+                        if(mess.length > 0){
+                            Alert.alert(mess)
                         }
                         else signup(data.email, data.password, data.displayName)
                     }}

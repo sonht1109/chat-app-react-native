@@ -4,7 +4,7 @@ import auth from '@react-native-firebase/auth';
 import { Alert } from 'react-native';
 import { GoogleSignin } from '@react-native-community/google-signin';
 import { LoginManager, AccessToken } from 'react-native-fbsdk';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 
 export const AuthContext = createContext()
@@ -50,6 +50,7 @@ function AuthProvider({ children }) {
             setUser,
             login: async (email, password) => {
                 try {
+                    await AsyncStorage.setItem("login.method", "email")
                     await auth().signInWithEmailAndPassword(email, password)
                 }
                 catch (e) {
@@ -60,16 +61,8 @@ function AuthProvider({ children }) {
             signup: async (email, password, displayName) => {
                 console.log(displayName);
                 try {
+                    await AsyncStorage.setItem("login.method", "google")
                     await auth().createUserWithEmailAndPassword(email, password)
-                    .then(() => {
-                        firestore().collection('users').doc(auth().currentUser.uid)
-                        .set({
-                            displayName: displayName,
-                            email: email,
-                            createAt: firestore.Timestamp.fromDate(new Date()),
-                            avt: null,
-                        })
-                    })
                     .catch(e => console.log('sign up with email', e))
                     Alert.alert('Sign up successful !')
                 }
@@ -79,7 +72,11 @@ function AuthProvider({ children }) {
             },
             logout: async () => {
                 try {
+                    const loginMethod = await AsyncStorage.getItem('login.method')
                     await auth().signOut()
+                    // if(loginMethod === 'google'){
+                    //     await GoogleSignin.revokeAccess()
+                    // }
                     await GoogleSignin.revokeAccess()
                 }
                 catch (e) {
@@ -88,21 +85,11 @@ function AuthProvider({ children }) {
             },
             googleLogin: async () => {
                 try {
+                    await AsyncStorage.setItem('login.method', "facebook")
                     const { idToken } = await GoogleSignin.signIn()
                     // await saveCredential(auth.GoogleAuthProvider.PROVIDER_ID, idToken)
                     const googleCredential = auth.GoogleAuthProvider.credential(idToken)
                     await auth().signInWithCredential(googleCredential)
-                    .then(res => {
-                        const {user} = res
-                        const avt = res.additionalUserInfo.profile.picture
-                        firestore().collection('users').doc(user.uid)
-                        .set({
-                            displayName: user.displayName,
-                            email: user.email,
-                            createAt: firestore.Timestamp.fromDate(new Date()),
-                            avt: avt,
-                        })
-                    })
                 }
                 catch (e) {
                     console.warn(e)
@@ -130,17 +117,6 @@ function AuthProvider({ children }) {
 
                     const facebookCredential = auth.FacebookAuthProvider.credential(data.accessToken)
                     await auth().signInWithCredential(facebookCredential)
-                    .then(res => {
-                        const {user} = res
-                        const avt = res.additionalUserInfo.profile.picture.data.url
-                        firestore().collection('users').doc(user.uid)
-                        .set({
-                            displayName: user.displayName,
-                            email: user.email,
-                            createAt: firestore.Timestamp.fromDate(new Date()),
-                            avt: avt,
-                        })
-                    })
                         // .catch(async (e) => {
                         //     try {
                         //         if (e.code === "auth/account-exists-with-different-credential") {

@@ -6,28 +6,28 @@ import Home from '../Home';
 import firestore from '@react-native-firebase/firestore';
 
 export default function Profile({ route, navigation }) {
+
   const { user, logout } = useContext(AuthContext)
-  // console.log(user)
 
   const [userData, setUserData] = useState(null)
 
-  const fetchUserData = async() => {
+  const fetchUser = async(uid) => {
     await firestore()
     .collection('users')
-    .doc(route.params ? route.params.userId : user.uid)
+    .doc(uid)
     .get()
     .then(doc => setUserData(doc.data()))
-    .catch(e => console.log('err in fetch user', e)) 
   }
 
   useEffect(() => {
-    fetchUserData()
-  }, [])
-
-  console.log('userdata', userData);
+    if(route.params && route.params.userId){
+      fetchUser(route.params.userId)
+    }
+    else setUserData({...user})
+  }, [route.params])
 
   const renderButtons = () => {
-    if (route.params && route.params.userId === user.uid) {
+    if (userData.uid !== user.uid) {
       return (
         <View style={styles.groupButton}>
           <TouchableOpacity activeOpacity={0.8}>
@@ -57,25 +57,27 @@ export default function Profile({ route, navigation }) {
         <View style={{marginVertical: 40}}>
           {/* avatar */}
           <View style={{ alignItems: 'center' }}>
-            <CustomAvatar size={120} displayName={userData?.displayName} uri={userData?.avt} />
-            <Text style={styles.displayName}>{userData?.displayName}</Text>
+            <CustomAvatar size={120} displayName={userData.displayName} uri={userData.avt} />
+            <Text style={styles.displayName}>{userData.displayName}</Text>
             {
-              !user.about && <Text style={styles.about}>Love vi </Text>
+              userData.about !== '' && <Text style={styles.about}>{userData.about}</Text>
             }
             {renderButtons()}
           </View>
           {/* some detail */}
           <View style={styles.detailWrapper}>
-            <View style={styles.detail}>
-              <Text style={{fontWeight: 'bold', fontSize: 24}}>32</Text>
+            {/* <View style={styles.detail}>
+              <Text style={{fontWeight: 'bold', fontSize: 24}}>
+                {getPostsNumber()}
+              </Text>
               <Text style={{color: "#666"}}>Posts</Text>
-            </View>
+            </View> */}
             <View style={styles.detail}>
-              <Text style={{fontWeight: 'bold', fontSize: 24}}>132</Text>
+              <Text style={{fontWeight: 'bold', fontSize: 24}}>1205</Text>
               <Text style={{color: "#666"}}>Followers</Text>
             </View>
             <View style={styles.detail}>
-              <Text style={{fontWeight: 'bold', fontSize: 24}}>320</Text>
+              <Text style={{fontWeight: 'bold', fontSize: 24}}>821</Text>
               <Text style={{color: "#666"}}>Followings</Text>
             </View>
           </View>

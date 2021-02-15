@@ -78,6 +78,8 @@ export default function AddPost({ navigation }) {
                 postImg: imageUrl,
                 likes: [],
                 comments: [],
+                userAvt: user.avt,
+                userDisplayName: user.displayName
             })
             .then(() => Alert.alert('Post uploaded !', '', [
                 {

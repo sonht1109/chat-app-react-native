@@ -8,6 +8,7 @@ import storage from '@react-native-firebase/storage';
 import Skeleton from './Skeleton';
 import ScaledImage from '../../components/ScaledImage';
 import timeConvertFromNow from '../../timeConvertFromNow';
+import CustomAvatar from '../../components/CustomAvatar';
 
 const { width } = Dimensions.get('window')
 
@@ -28,13 +29,13 @@ export default function Home({navigation, profile}) {
             .get()
             .then(querySnapshot => {
                 querySnapshot.forEach(doc => {
-                    const { date, userId, avt, post, postImg, likes, comments } = doc.data()
+                    const { date, userId, avt, post, postImg, likes, comments, userAvt, userDisplayName } = doc.data()
                     arr.push({
                         id: doc.id,
                         date: date.seconds,
                         userId,
-                        user: 'Hoang Thai Son',
-                        avt,
+                        userDisplayName,
+                        userAvt,
                         post,
                         postImg,
                         likes,
@@ -56,13 +57,13 @@ export default function Home({navigation, profile}) {
             .get()
             .then(querySnapshot => {
                 querySnapshot.forEach(doc => {
-                    const { date, userId, avt, post, postImg, likes, comments } = doc.data()
+                    const { date, userId, avt, post, postImg, likes, comments, userAvt, userDisplayName } = doc.data()
                     arr.push({
                         id: doc.id,
                         date: date.seconds,
                         userId,
-                        user: 'Hoang Thai Son',
-                        avt,
+                        userDisplayName,
+                        userAvt,
                         post,
                         postImg,
                         likes,
@@ -153,13 +154,20 @@ export default function Home({navigation, profile}) {
     const renderItem = ({ item }) => {
         const isLiked = item.likes.includes(user.uid)
         const iconAnimated = new Animated.Value(0)
+
         return (
             <S.PostWrapper>
                 <S.Post>
-                    <View style={{ flexDirection: 'row' }}>
-                        <S.Avatar source={require('../../../assets/img/users/avt-1.png')} />
-                        <View>
-                            <Text style={{ fontWeight: "bold" }}>{item.user}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: "center" }}>
+                        <CustomAvatar size={45} displayName={item.userDisplayName} uri={item.userAvt} />
+                        <View style={{marginLeft: 15}}>
+                            <Text style={{ fontWeight: "bold", fontSize: 16 }}
+                                onPress={() => navigation.navigate("UserProfile", {
+                                    userId: item.userId
+                                })}
+                            >
+                                {item.userDisplayName}
+                            </Text>
                             <Text style={{ fontSize: 12, color: "#666" }}>
                                 {timeConvertFromNow(item.date)}
                             </Text>
