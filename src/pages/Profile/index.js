@@ -24,7 +24,7 @@ export default function Profile({ route, navigation }) {
     fetchUserData()
   }, [])
 
-  console.log(userData);
+  console.log('userdata', userData);
 
   const renderButtons = () => {
     if (route.params && route.params.userId === user.uid) {
@@ -57,8 +57,8 @@ export default function Profile({ route, navigation }) {
         <View style={{marginVertical: 40}}>
           {/* avatar */}
           <View style={{ alignItems: 'center' }}>
-            <CustomAvatar size={120} displayName={userData?.displayName} />
-            <Text style={styles.displayName}>{user.displayName}</Text>
+            <CustomAvatar size={120} displayName={userData?.displayName} uri={userData?.avt} />
+            <Text style={styles.displayName}>{userData?.displayName}</Text>
             {
               !user.about && <Text style={styles.about}>Love vi </Text>
             }

@@ -92,7 +92,17 @@ function AuthProvider({ children }) {
                     // await saveCredential(auth.GoogleAuthProvider.PROVIDER_ID, idToken)
                     const googleCredential = auth.GoogleAuthProvider.credential(idToken)
                     await auth().signInWithCredential(googleCredential)
-                    .then(res => console.log(res))
+                    .then(res => {
+                        const {user} = res
+                        const avt = res.additionalUserInfo.profile.picture
+                        firestore().collection('users').doc(user.uid)
+                        .set({
+                            displayName: user.displayName,
+                            email: user.email,
+                            createAt: firestore.Timestamp.fromDate(new Date()),
+                            avt: avt,
+                        })
+                    })
                 }
                 catch (e) {
                     console.warn(e)
@@ -120,6 +130,17 @@ function AuthProvider({ children }) {
 
                     const facebookCredential = auth.FacebookAuthProvider.credential(data.accessToken)
                     await auth().signInWithCredential(facebookCredential)
+                    .then(res => {
+                        const {user} = res
+                        const avt = res.additionalUserInfo.profile.picture.data.url
+                        firestore().collection('users').doc(user.uid)
+                        .set({
+                            displayName: user.displayName,
+                            email: user.email,
+                            createAt: firestore.Timestamp.fromDate(new Date()),
+                            avt: avt,
+                        })
+                    })
                         // .catch(async (e) => {
                         //     try {
                         //         if (e.code === "auth/account-exists-with-different-credential") {

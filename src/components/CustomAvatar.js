@@ -16,7 +16,7 @@ export default function CustomAvatar({displayName, uri, size}) {
 
     if(uri){
         return (
-            <Avatar.Image size={size} source={require('../../assets/img/users/avt-1.png')}/> 
+            <Avatar.Image size={size} source={{uri: uri}}/> 
         )
     }
     return (
