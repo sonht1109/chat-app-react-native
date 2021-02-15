@@ -24,7 +24,9 @@ function Route() {
                 phoneNumber: user.phoneNumber,
                 uid: user.uid,
                 email: user.email,
-                about: ''
+                about: '',
+                followings: [],
+                followers: []
             }
             await firestore().collection('users').doc(user.uid)
                 .set({ ...userData })

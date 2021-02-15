@@ -12,7 +12,7 @@ import CustomAvatar from '../../components/CustomAvatar';
 
 const { width } = Dimensions.get('window')
 
-export default function Home({navigation, profile}) {
+export default function Home({ navigation }) {
 
     const [posts, setPosts] = useState([])
     const [loading, setLoading] = useState(true)
@@ -21,15 +21,13 @@ export default function Home({navigation, profile}) {
 
     const fetchPosts = async () => {
         let arr = []
-        if(profile){
-            await firestore()
+        await firestore()
             .collection('posts')
-            .where('userId', '==', user.uid)
             .orderBy('date', 'desc')
             .get()
             .then(querySnapshot => {
                 querySnapshot.forEach(doc => {
-                    const { date, userId, avt, post, postImg, likes, comments, userAvt, userDisplayName } = doc.data()
+                    const { date, userId, post, postImg, likes, comments, userAvt, userDisplayName } = doc.data()
                     arr.push({
                         id: doc.id,
                         date: date.seconds,
@@ -46,38 +44,9 @@ export default function Home({navigation, profile}) {
             })
             .then(() => {
                 setPosts(arr)
-                if(loading) setLoading(false)
+                if (loading) setLoading(false)
             })
             .catch(e => console.log('Err in fetching posts', e))
-        }
-        else {
-            await firestore()
-            .collection('posts')
-            .orderBy('date', 'desc')
-            .get()
-            .then(querySnapshot => {
-                querySnapshot.forEach(doc => {
-                    const { date, userId, avt, post, postImg, likes, comments, userAvt, userDisplayName } = doc.data()
-                    arr.push({
-                        id: doc.id,
-                        date: date.seconds,
-                        userId,
-                        userDisplayName,
-                        userAvt,
-                        post,
-                        postImg,
-                        likes,
-                        comments,
-                        liked: false
-                    })
-                })
-            })
-            .then(() => {
-                setPosts(arr)
-                if(loading) setLoading(false)
-            })
-            .catch(e => console.log('Err in fetching posts', e))
-        }
     }
 
     useEffect(() => {
@@ -139,14 +108,14 @@ export default function Home({navigation, profile}) {
             duration: 200,
             toValue: 1,
             useNativeDriver: true,
-        }).start(() =>  setOnRefresh(prev => !prev))
+        }).start(() => setOnRefresh(prev => !prev))
         await firestore()
             .doc(`posts/${id}`)
             .update({
                 likes: !isLiked ? firestore.FieldValue.arrayUnion(user.uid) : firestore.FieldValue.arrayRemove(user.uid)
             })
             .then(() => {
-                
+
             })
             .catch(e => console.log('handle like', e))
     }
@@ -160,7 +129,7 @@ export default function Home({navigation, profile}) {
                 <S.Post>
                     <View style={{ flexDirection: 'row', alignItems: "center" }}>
                         <CustomAvatar size={45} displayName={item.userDisplayName} uri={item.userAvt} />
-                        <View style={{marginLeft: 15}}>
+                        <View style={{ marginLeft: 15 }}>
                             <Text style={{ fontWeight: "bold", fontSize: 16 }}
                                 onPress={() => navigation.navigate("UserProfile", {
                                     userId: item.userId
@@ -186,17 +155,19 @@ export default function Home({navigation, profile}) {
                 }
                 <S.PostInteract>
                     <TouchableOpacity
-                    onPress={() => onHandleLike(iconAnimated, item.id, isLiked)}
-                    activeOpacity={0.8}
+                        onPress={() => onHandleLike(iconAnimated, item.id, isLiked)}
+                        activeOpacity={0.8}
                     >
                         <Animated.View style={{ flexDirection: "row", marginRight: 40, alignItems: 'center' }}>
                             <Animated.View style={{
-                                transform: [{scale: iconAnimated.interpolate({
-                                    inputRange: [0, 0.5, 1],
-                                    outputRange: [1, 1.5, 1]
-                                })}]
+                                transform: [{
+                                    scale: iconAnimated.interpolate({
+                                        inputRange: [0, 0.5, 1],
+                                        outputRange: [1, 1.5, 1]
+                                    })
+                                }]
                             }}>
-                            <Icon name={isLiked ? "heart" : "heart-outline"} size={24} color="#3c5898" />
+                                <Icon name={isLiked ? "heart" : "heart-outline"} size={24} color="#3c5898" />
                             </Animated.View>
                             <S.InteractText>{item.likes.length}</S.InteractText>
                         </Animated.View>
