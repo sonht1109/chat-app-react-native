@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Text, View, Animated, TouchableOpacity, Dimensions } from 'react-native'
 import * as S from '../styles/HomeStyled'
 import timeConvertFromNow from '../timeConvertFromNow';

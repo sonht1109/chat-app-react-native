@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { Alert, FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
+import { Alert, Animated, FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { AuthContext } from '../../navigations/AuthProvider';
 import CustomAvatar from '../../components/CustomAvatar';
 import firestore from '@react-native-firebase/firestore';
@@ -7,18 +7,26 @@ import * as S from '../../styles/HomeStyled'
 import Skeleton from '../Home/Skeleton';
 import storage from '@react-native-firebase/storage';
 import Post from '../../components/Post';
-
-const {width} = Dimensions.get('window')
+import Icon from 'react-native-vector-icons/Ionicons'
 
 export default function Profile({ route, navigation }) {
 
   const { user, logout } = useContext(AuthContext)
 
   const [userData, setUserData] = useState({ ...user })
-
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [onRefresh, setOnRefresh] = useState(false)
+
+  const refreshAnimated = new Animated.Value(0)
+
+  const isFollowed = useMemo(() => {
+    let res = false
+    if (route.params && route.params.userId) {
+      res = userData.followers.includes(user.uid)
+    }
+    return res
+  }, [userData])
 
   const fetchPosts = async () => {
     let arr = []
@@ -52,12 +60,11 @@ export default function Profile({ route, navigation }) {
   }
 
   useEffect(() => {
+    let uid = user.uid
     if (route.params && route.params.userId) {
-      fetchUser(route.params.userId)
+      uid = route.params.userId
     }
-  }, [route.params])
-
-  useEffect(() => {
+    fetchUser(uid)
     fetchPosts()
     navigation.addListener("focus", () => {
       console.log('navigation listener');
@@ -120,17 +127,53 @@ export default function Profile({ route, navigation }) {
       .doc(uid)
       .get()
       .then(doc => setUserData(doc.data()))
+      .catch(e => console.log('err in fetching user,', e))
+  }
+
+  const onFollow = async () => {
+    if (route.params && route.params.userId) {
+      await firestore()
+        .collection('users')
+        .doc(route.params.userId)
+        .update({
+          followers: isFollowed ? firestore.FieldValue.arrayRemove(user.uid) : firestore.FieldValue.arrayUnion(user.uid)
+        })
+        .then(async () => {
+          await firestore()
+            .collection('users')
+            .doc(user.uid)
+            .update({
+              followings: isFollowed ? firestore.FieldValue.arrayRemove(route.params.userId) : firestore.FieldValue.arrayUnion(route.params.userId)
+            })
+            .then(() => setOnRefresh(prev => !prev))
+            .catch(e => console.log("err in updating followings of current user", e))
+        })
+        .catch(e => console.log("err in updating followers of user", e))
+    }
+  }
+
+  const onHandleRefresh = () => {
+    refreshAnimated.setValue(0)
+    Animated.timing(refreshAnimated, {
+      toValue: 1,
+      useNativeDriver: true,
+      duration: 300
+    }).start(() => setOnRefresh(prev => !prev))
   }
 
   const renderButtons = () => {
     if (userData.uid !== user.uid) {
       return (
         <View style={styles.groupButton}>
-          <TouchableOpacity activeOpacity={0.8}>
-            <Text style={styles.button}>Follow</Text>
+          <TouchableOpacity activeOpacity={0.8} onPress={onFollow}>
+            <Text style={isFollowed ? styles.activeButton : styles.button}>
+              {isFollowed ? 'Unfollow' : 'Follow'}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity activeOpacity={0.8}>
-            <Text style={styles.button}>Message</Text>
+            <Text style={styles.button}>
+              Message
+            </Text>
           </TouchableOpacity>
         </View>
       )
@@ -147,10 +190,30 @@ export default function Profile({ route, navigation }) {
     )
   }
 
+  const refreshStyle = refreshAnimated.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"]
+  })
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
-        <View style={{ marginVertical: 40 }}>
+        <View style={{ marginTop: 20, flexDirection: "row", justifyContent: route.params ? "space-between" : "flex-end" }}>
+         {
+           route.params &&  <TouchableOpacity
+           activeOpacity={0.8} onPress={() => navigation.goBack()}>
+             <Icon name="chevron-back" size={25} color="black" style={{marginLeft: 10}} />
+           </TouchableOpacity>
+         }
+          <TouchableOpacity onPress={onHandleRefresh} activeOpacity={0.8}>
+            <Animated.View style={{ marginRight: 10, transform: [{
+              rotate: refreshStyle
+            }] }}>
+              <Icon name="refresh-outline" color="black" size={25} />
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
+        <View style={{ marginVertical: 20 }}>
           {/* avatar */}
           <View style={{ alignItems: 'center' }}>
             <CustomAvatar size={120} displayName={userData.displayName} uri={userData.avt} />
@@ -162,21 +225,21 @@ export default function Profile({ route, navigation }) {
           </View>
           {/* some detail */}
           <View style={styles.detailWrapper}>
-            {/* <View style={styles.detail}>
-              <Text style={{fontWeight: 'bold', fontSize: 24}}>
-                {getPostsNumber()}
-              </Text>
-              <Text style={{color: "#666"}}>Posts</Text>
-            </View> */}
             <View style={styles.detail}>
               <Text style={{ fontWeight: 'bold', fontSize: 24 }}>
-                {userData.followings.length}
+                {posts.length}
+              </Text>
+              <Text style={{ color: "#666" }}>Posts</Text>
+            </View>
+            <View style={styles.detail}>
+              <Text style={{ fontWeight: 'bold', fontSize: 24 }}>
+                {userData.followers.length}
               </Text>
               <Text style={{ color: "#666" }}>Followers</Text>
             </View>
             <View style={styles.detail}>
               <Text style={{ fontWeight: 'bold', fontSize: 24 }}>
-                {userData.followers.length}
+                {userData.followings.length}
               </Text>
               <Text style={{ color: "#666" }}>Followings</Text>
             </View>
@@ -237,5 +300,15 @@ const styles = StyleSheet.create({
   },
   detail: {
     alignItems: 'center'
+  },
+  activeButton: {
+    backgroundColor: "#3c5898",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    textAlign: 'center',
+    color: 'white',
+    borderRadius: 5,
+    marginHorizontal: 10,
+    borderWidth: 0,
   }
 })

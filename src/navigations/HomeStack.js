@@ -42,10 +42,7 @@ export default function HomeStack() {
                 component={Profile}
                 options={{
                     title: '',
-                    headerStyle: {
-                        elevation: 0,
-                        shadowOpacity: 0
-                    }
+                    headerShown: false
                 }}
             />
         </Stack.Navigator>
