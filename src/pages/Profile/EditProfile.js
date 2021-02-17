@@ -1,26 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { Keyboard, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { Avatar, HelperText } from 'react-native-paper'
-import { Caption, Title, TextInput } from 'react-native-paper'
-import { useTheme } from '@react-navigation/native';
+import { Title, TextInput } from 'react-native-paper'
+// import { useTheme } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import BottomSheet from 'reanimated-bottom-sheet'
 import Animated from 'react-native-reanimated';
 import ImagePicker from 'react-native-image-crop-picker';
+import { AuthContext } from '../../navigations/AuthProvider';
 
 export default function EditProfile() {
 
     const [avt, setAvt] = useState('')
-    const { colors } = useTheme()
-    const [user, setUser] = useState({
-        user: "admin",
-        age: '20',
-        about: "Love vi",
-        email: "admin@gmail.com",
-        phone: "0987612345",
-        uid: '21387'
-    })
-
+    // const { colors } = useTheme()
+    const {user} = useContext(AuthContext)
+    const [userData, setUserData] = useState()
     const bs = useRef()
     const fall = new Animated.Value(1)
     // 1: hide, 0: show
@@ -32,6 +26,10 @@ export default function EditProfile() {
             }
         })
     }, [])
+
+    useEffect(() => {
+
+    }, [route.params])
 
     const checkUser = () => {
         return user.age !== '' && user.address !== '' && user.email !== '' && user.phone !== ''
@@ -117,6 +115,7 @@ export default function EditProfile() {
                 callbackNode={fall}
                 renderContent={renderContent}
                 renderHeader={renderHeader}
+                enabledGestureInteraction
             />
             <Animated.ScrollView
                 style={{
@@ -148,6 +147,19 @@ export default function EditProfile() {
                 </View>
                 <View>
                     <View>
+                        <TextInput style={styles.textInput} label="Email"
+                            theme={{
+                                colors: {
+                                    text: "black",
+                                    primary: "#3c5898"
+                                }
+                            }}
+                            disabled
+                            value={user.email}
+                        />
+                        <HelperText visible={!checkUser()} type='error'>
+                            Please fill all fields
+                        </HelperText>
                         <TextInput style={styles.textInput} label="About"
                             theme={{
                                 colors: {
@@ -155,7 +167,7 @@ export default function EditProfile() {
                                     primary: "#3c5898"
                                 }
                             }}
-                            value={user.about} onChangeText={val => setUser({ ...user, about: val })}
+                            value={user.about} onChangeText={val => setUserData({ ...user, about: val })}
                         />
                         <HelperText visible={!checkUser()} type='error'>
                             Please fill all fields
@@ -169,19 +181,7 @@ export default function EditProfile() {
                                 }
                             }}
                             keyboardType="number-pad"
-                            value={user.age} onChangeText={val => setUser({ ...user, age: val })}
-                        />
-                        <HelperText visible={!checkUser()} type='error'>
-                            Please fill all fields
-                        </HelperText>
-                        <TextInput style={styles.textInput} label="Email"
-                            theme={{
-                                colors: {
-                                    text: "black",
-                                    primary: "#3c5898"
-                                }
-                            }}
-                            value={user.email} onChangeText={val => setUser({ ...user, email: val })}
+                            value={user.age} onChangeText={val => setUserData({ ...user, age: val })}
                         />
                         <HelperText visible={!checkUser()} type='error'>
                             Please fill all fields
@@ -194,7 +194,7 @@ export default function EditProfile() {
                                     primary: "#3c5898"
                                 }
                             }}
-                            value={user.phone} onChangeText={val => setUser({ ...user, phone: val })}
+                            value={user.phone} onChangeText={val => setUserData({ ...user, phone: val })}
                         />
                         <HelperText visible={!checkUser()} type="error">
                             Please fill all fields

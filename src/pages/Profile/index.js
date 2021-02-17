@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { Alert, Animated, FlatList, LogBox, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Animated, Easing, FlatList, LogBox, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { AuthContext } from '../../navigations/AuthProvider';
 import CustomAvatar from '../../components/CustomAvatar';
 import firestore from '@react-native-firebase/firestore';
@@ -161,7 +161,8 @@ export default function Profile({ route, navigation }) {
     Animated.timing(refreshAnimated, {
       toValue: 1,
       useNativeDriver: true,
-      duration: 300
+      duration: 500,
+      easing: Easing.bezier(.53,1.18,.67,.9)
     }).start(() => setOnRefresh(prev => !prev))
   }
 
@@ -185,7 +186,9 @@ export default function Profile({ route, navigation }) {
     return (
       <View style={styles.groupButton}>
         <TouchableOpacity activeOpacity={0.8}>
-          <Text style={styles.button} onPress={() => navigation.navigate("EditProfile")}>
+          <Text
+          style={styles.button}
+          onPress={() => navigation.navigate("EditProfile", {userData: userData})}>
             Edit
           </Text>
         </TouchableOpacity>
@@ -197,8 +200,8 @@ export default function Profile({ route, navigation }) {
   }
 
   const refreshStyle = refreshAnimated.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"]
+    inputRange: [0, 0.8, 1],
+    outputRange: ["0deg", "240deg", '180deg']
   })
 
   return (

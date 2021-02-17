@@ -1,10 +1,11 @@
 import React from 'react'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+// import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import HomeStack from './HomeStack';
 import ProfileStack from './ProfileStack';
 import Icon from 'react-native-vector-icons/Ionicons'
 import ChatsStack from './ChatsStack';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 const Tab = createBottomTabNavigator()
 
@@ -25,7 +26,7 @@ export default function MainStack(){
     return(
         <Tab.Navigator
             tabBarOptions={{
-                activeTintColor: "#2a5898"
+                activeTintColor: "#3c5898",
             }}
         >
             <Tab.Screen
@@ -34,7 +35,7 @@ export default function MainStack(){
             options={({route}) => (
                 {
                     title: "Home",
-                    tabBarIcon: ({size, color})=><Icon name="newspaper-outline" size={size} color={color}/>,
+                    tabBarIcon: ({color})=><Icon name="newspaper-outline" size={20} color={color}/>,
                     tabBarVisible: tabbarVisibility(route)
                 }
             )}
@@ -44,8 +45,8 @@ export default function MainStack(){
             component={ChatsStack}
             options={({route}) => ({
                 title: "Chats",
-                tabBarIcon: ({size, color})=><Icon name="chatbox-ellipses-outline"
-                size={size} color={color} />,
+                tabBarIcon: ({color})=><Icon name="chatbox-ellipses-outline"
+                size={20} color={color} />,
                 tabBarVisible: tabbarVisibility(route)
             })}
             />
@@ -54,7 +55,7 @@ export default function MainStack(){
             component={ProfileStack}
             options={({route}) => ({
                 title: "Profile",
-                tabBarIcon: ({size, color})=><Icon name="person-outline" size={size} color={color} />,
+                tabBarIcon: ({color})=><Icon name="person-outline" size={20} color={color} />,
                 tabBarVisible: tabbarVisibility(route)
             })}
             />

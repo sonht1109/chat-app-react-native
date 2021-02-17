@@ -20,7 +20,7 @@ function Route() {
             await firestore().collection('users').doc(user.uid)
             .get()
             .then(async (doc) => {
-                if(!doc.data()){
+                if(!doc.exists){
                     userData = {
                         displayName: user.displayName ? user.displayName : "Social User",
                         avt: user.photoURL,

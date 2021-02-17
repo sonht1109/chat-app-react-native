@@ -22,7 +22,8 @@ export default function ChatsStack(){
                     },
                     headerTitleStyle: {
                         fontWeight: "bold"
-                    }
+                    },
+                    headerTitle: () => <Icon name="chatbox-ellipses-outline" size={40} color="#3c5898" />
                 }}
             />
             <Stack.Screen
@@ -30,7 +31,7 @@ export default function ChatsStack(){
                 component={ChatDetail}
                 options={({route, navigation}) => (
                     {
-                        title: 'User',
+                        title: "User",
                         headerTitleAlign: "center",
                         headerTitleStyle: {
                             fontWeight: 'bold',
