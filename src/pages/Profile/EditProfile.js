@@ -1,38 +1,69 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import { Keyboard, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
-import { Avatar, HelperText } from 'react-native-paper'
+import React, { useEffect, useRef, useState } from 'react'
+import { Keyboard, StyleSheet, Text, View, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
 import { Title, TextInput } from 'react-native-paper'
 // import { useTheme } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import BottomSheet from 'reanimated-bottom-sheet'
 import Animated from 'react-native-reanimated';
 import ImagePicker from 'react-native-image-crop-picker';
-import { AuthContext } from '../../navigations/AuthProvider';
+import CustomAvatar from '../../components/CustomAvatar';
+import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
 
-export default function EditProfile() {
+export default function EditProfile({ navigation, route }) {
 
-    const [avt, setAvt] = useState('')
-    // const { colors } = useTheme()
-    const {user} = useContext(AuthContext)
-    const [userData, setUserData] = useState()
+    const user = route.params.userData
+
+    const [avtImg, setAvtImg] = useState(user.avt)
+    const [userData, setUserData] = useState({ ...user })
     const bs = useRef()
     const fall = new Animated.Value(1)
+    const [loading, setLoading] = useState(false)
     // 1: hide, 0: show
 
-    useEffect(() => {
+    useEffect(() => async () => {
         Keyboard.addListener("keyboardDidShow", () => {
             if (bs.current) {
                 bs.current.snapTo(1)
             }
         })
+        await firestore()
+            .collection('users')
+            .doc(userData.uid)
+            .get()
+            .then(doc => setUserData({ ...doc.data() }))
+            .catch(e => console.log('err in fetching userdata', e))
     }, [])
 
-    useEffect(() => {
+    const deleteCurrentAvatarFromStorage = async () => {
+        if (userData.avt && userData.avt !== avtImg) {
+            const storageRef = storage().refFromURL(userData.avt)
+            console.log(storageRef);
+            const imageRef = storage().ref(storageRef.fullPath)
+            await imageRef
+                .delete()
+                .then(() => console.log('avt deleted'))
+                .catch(e => console.log('Err in delete img', e))
+        }
+    }
 
-    }, [route.params])
+    const handleUploadImage = async () => {
+        let imgUrl = null
+        if (avtImg) {
+            const fileName = avtImg.substring(avtImg.lastIndexOf('/') + 1)
+            const extension = fileName.substring(fileName.lastIndexOf('.') + 1)
+            fileName.substring(0, fileName.lastIndexOf('.')) + '-' + Date.now()
+            const timeStamp = fileName.substring(0, fileName.lastIndexOf('.')) + '-' + Date.now()
 
-    const checkUser = () => {
-        return user.age !== '' && user.address !== '' && user.email !== '' && user.phone !== ''
+            const storageRef = storage().ref(`userAvatars/${timeStamp}.${extension}`)
+
+            await storageRef.putFile(avtImg)
+                .then(() => {
+                    imgUrl = storageRef.getDownloadURL()
+                })
+                .catch(e => console.log('err in storing avt', e))
+        }
+        return imgUrl
     }
 
     const handleTakeAPhoto = () => {
@@ -42,7 +73,7 @@ export default function EditProfile() {
             height: 300,
             cropping: true,
         }).then(image => {
-            setAvt(image.path)
+            setAvtImg(image.path)
             bs.current.snapTo(1)
         })
             .catch(err => console.log(err))
@@ -54,14 +85,14 @@ export default function EditProfile() {
             height: 300,
             cropping: true
         }).then(image => {
-            setAvt(image.path)
+            setAvtImg(image.path)
             bs.current.snapTo(1)
         })
             .catch(err => console.log(err))
     }
 
     const handleDiscardAvatar = () => {
-        setAvt('')
+        setAvtImg(null)
         bs.current.snapTo(1)
     }
 
@@ -102,8 +133,31 @@ export default function EditProfile() {
         )
     }
 
-    const updateAvatar = () => {
+    const toggleBottomSheet = () => {
         bs.current.snapTo(0)
+    }
+
+    const onSubmitUpdate = async () => {
+        setLoading(true)
+        let avtUrl = await handleUploadImage()
+        await deleteCurrentAvatarFromStorage()
+        await firestore()
+            .collection('users')
+            .doc(userData.uid)
+            .update({
+                about: userData.about,
+                phone: userData.phone,
+                age: userData.age,
+                avt: avtUrl
+            })
+            .then(() => setLoading(false))
+            .then(() => Alert.alert('Profile updated', '', [
+                {
+                    text: "OK",
+                    onPress: () => navigation.navigate("Profile")
+                }
+            ]))
+            .catch(e => console.log('err in updating userData', e))
     }
 
     return (
@@ -126,40 +180,18 @@ export default function EditProfile() {
                 <View style={{ alignItems: 'center' }}>
                     <TouchableOpacity
                         // activeOpacity={0.8}
-                        onPress={updateAvatar}
+                        onPress={toggleBottomSheet}
                     >
-                        {
-                            avt === '' ?
-                                <Avatar.Text
-                                    style={{ backgroundColor: "#3c5898" }}
-                                    label={user.user.substring(0, 2).toUpperCase()}
-                                    size={100} /> :
-
-                                <Avatar.Image
-                                    size={100}
-                                    source={{ uri: avt }}
-                                />
-                        }
+                        <CustomAvatar size={120} displayName={userData.displayName}
+                            uri={avtImg} />
                     </TouchableOpacity>
-                    <Title style={{ color: 'black' }}>
-                        {user.user}
-                    </Title>
+                    <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 10 }}>
+                        {user.displayName}
+                    </Text>
                 </View>
                 <View>
                     <View>
-                        <TextInput style={styles.textInput} label="Email"
-                            theme={{
-                                colors: {
-                                    text: "black",
-                                    primary: "#3c5898"
-                                }
-                            }}
-                            disabled
-                            value={user.email}
-                        />
-                        <HelperText visible={!checkUser()} type='error'>
-                            Please fill all fields
-                        </HelperText>
+
                         <TextInput style={styles.textInput} label="About"
                             theme={{
                                 colors: {
@@ -167,11 +199,9 @@ export default function EditProfile() {
                                     primary: "#3c5898"
                                 }
                             }}
-                            value={user.about} onChangeText={val => setUserData({ ...user, about: val })}
+                            value={userData.about} onChangeText={val => setUserData({ ...userData, about: val })}
                         />
-                        <HelperText visible={!checkUser()} type='error'>
-                            Please fill all fields
-                        </HelperText>
+
                         <TextInput
                             style={[styles.textInput]} label="Age"
                             theme={{
@@ -181,11 +211,9 @@ export default function EditProfile() {
                                 }
                             }}
                             keyboardType="number-pad"
-                            value={user.age} onChangeText={val => setUserData({ ...user, age: val })}
+                            value={userData.age} onChangeText={val => setUserData({ ...userData, age: val })}
                         />
-                        <HelperText visible={!checkUser()} type='error'>
-                            Please fill all fields
-                        </HelperText>
+
                         <TextInput style={styles.textInput} label="Phone"
                             keyboardType="number-pad"
                             theme={{
@@ -194,17 +222,39 @@ export default function EditProfile() {
                                     primary: "#3c5898"
                                 }
                             }}
-                            value={user.phone} onChangeText={val => setUserData({ ...user, phone: val })}
+                            value={userData.phoneNumber} onChangeText={val => setUserData({ ...userData, phoneNumber: val })}
                         />
-                        <HelperText visible={!checkUser()} type="error">
-                            Please fill all fields
-                        </HelperText>
+
+                        <TextInput style={styles.textInput} label="Email"
+                            theme={{
+                                colors: {
+                                    text: "black",
+                                    primary: "#3c5898"
+                                }
+                            }}
+                            disabled
+                            value={userData.email}
+                        />
+
                     </View>
                     <TouchableOpacity
                         activeOpacity={0.8}
                         style={[styles.button, { backgroundColor: "#3c5898" }]}
+                        onPress={onSubmitUpdate}
+                        disabled={loading}
                     >
-                        <Text style={{ color: 'white' }}>Update</Text>
+                        {
+                            !loading ?
+                                <Text style={{ color: 'white' }}>
+                                    Update
+                                </Text> :
+                                <View style={{flexDirection: "row", alignItems: 'center'}}>
+                                    <Text style={{ color: 'white', marginRight: 5 }}>
+                                        Updating ...
+                                    </Text>
+                                    <ActivityIndicator size="small" color="white" />
+                                </View>
+                        }
                     </TouchableOpacity>
                 </View>
             </Animated.ScrollView>
@@ -219,7 +269,9 @@ const styles = StyleSheet.create({
     },
     textInput: {
         backgroundColor: "transparent",
-        marginVertical: 0
+        marginVertical: 0,
+        marginVertical: 10
+
     },
     button: {
         alignItems: "center",

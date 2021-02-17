@@ -299,7 +299,8 @@ const styles = StyleSheet.create({
     marginTop: 10
   },
   about: {
-    fontSize: 16,
+    fontSize: 14,
+    marginTop: 5,
     color: "#666"
   },
   detailWrapper: {
