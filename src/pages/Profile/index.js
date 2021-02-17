@@ -185,7 +185,9 @@ export default function Profile({ route, navigation }) {
     return (
       <View style={styles.groupButton}>
         <TouchableOpacity activeOpacity={0.8}>
-          <Text style={styles.button}>Edit</Text>
+          <Text style={styles.button} onPress={() => navigation.navigate("EditProfile")}>
+            Edit
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={0.8}>
           <Text style={styles.button} onPress={logout}>Log out</Text>

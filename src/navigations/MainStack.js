@@ -9,7 +9,7 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 const Tab = createBottomTabNavigator()
 
 const screensWithHiddenTabbar = [
-    "AddPost", "ChatDetail"
+    "AddPost", "ChatDetail", "EditProfile"
 ]
 
 export default function MainStack(){
@@ -52,10 +52,11 @@ export default function MainStack(){
             <Tab.Screen
             name="ProfileStack"
             component={ProfileStack}
-            options={{
+            options={({route}) => ({
                 title: "Profile",
-                tabBarIcon: ({size, color})=><Icon name="person-outline" size={size} color={color} />
-            }}
+                tabBarIcon: ({size, color})=><Icon name="person-outline" size={size} color={color} />,
+                tabBarVisible: tabbarVisibility(route)
+            })}
             />
         </Tab.Navigator>
     )
