@@ -14,17 +14,6 @@ export default function ProfileStack(){
                 headerShown: false
             }}
             />
-            <Stack.Screen
-                name="UserProfile"
-                component={Profile}
-                options={{
-                    title: '',
-                    headerStyle: {
-                        elevation: 0,
-                        shadowOpacity: 0
-                    }
-                }}
-            />
         </Stack.Navigator>
     )
 }

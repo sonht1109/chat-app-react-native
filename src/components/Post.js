@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Text, View, Animated, TouchableOpacity, Dimensions } from 'react-native'
 import * as S from '../styles/HomeStyled'
 import timeConvertFromNow from '../timeConvertFromNow';
@@ -47,9 +47,13 @@ export default function Post({item, user, onDeletePost, navigation}) {
                     <CustomAvatar size={45} displayName={item.userDisplayName} uri={item.userAvt} />
                     <View style={{ marginLeft: 15 }}>
                         <Text style={{ fontWeight: "bold", fontSize: 16 }}
-                            onPress={() => navigation.navigate("UserProfile", {
-                                userId: item.userId
-                            })}
+                            onPress={() => {
+                                if(navigation){
+                                    navigation.navigate("UserProfile", {
+                                        userId: item.userId
+                                    })
+                                }
+                            }}
                         >
                             {item.userDisplayName}
                         </Text>

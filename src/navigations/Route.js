@@ -17,28 +17,38 @@ function Route() {
         // setUser(user)
         let userData = null
         if (user) {
-            userData = {
-                displayName: user.displayName ? user.displayName : "Social User",
-                avt: user.photoURL,
-                createAt: user.metadata.creationTime,
-                phoneNumber: user.phoneNumber,
-                uid: user.uid,
-                email: user.email,
-                about: '',
-                followings: [],
-                followers: []
-            }
             await firestore().collection('users').doc(user.uid)
-                .set({ ...userData })
-                .then(() => {
-                    setUser({ ...userData })
-                    if (initializing) setInitializing(false)
-                })
+            .get()
+            .then(async (doc) => {
+                if(!doc.data()){
+                    userData = {
+                        displayName: user.displayName ? user.displayName : "Social User",
+                        avt: user.photoURL,
+                        createAt: user.metadata.creationTime,
+                        phoneNumber: user.phoneNumber,
+                        uid: user.uid,
+                        email: user.email,
+                        about: '',
+                        followings: [],
+                        followers: []
+                    }
+                    await firestore().collection('users').doc(user.uid)
+                        .set({ ...userData })
+                        .then(() => {
+                            setUser({ ...userData })
+                        })
+                        .catch(e => console.log("err in setting userdata", e))
+                }
+                else{
+                    setUser({...doc.data()})
+                }
+            })
+            .catch(e => console.log('err in user data', e))
         }
         else {
             setUser(null)
-            if (initializing) setInitializing(false)
         }
+        if (initializing) setInitializing(false)
     }
 
     useEffect(() => {

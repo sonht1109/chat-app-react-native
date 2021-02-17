@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { Alert, Animated, FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Animated, FlatList, LogBox, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { AuthContext } from '../../navigations/AuthProvider';
 import CustomAvatar from '../../components/CustomAvatar';
 import firestore from '@react-native-firebase/firestore';
@@ -60,6 +60,10 @@ export default function Profile({ route, navigation }) {
   }
 
   useEffect(() => {
+    LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+  }, [])
+
+  useEffect(() => {
     let uid = user.uid
     if (route.params && route.params.userId) {
       uid = route.params.userId
@@ -118,7 +122,7 @@ export default function Profile({ route, navigation }) {
   }
 
   const renderItem = ({ item }) => {
-    return <Post item={item} onDeletePost={onDeletePost} user={user} navigation={navigation} />
+    return <Post item={item} onDeletePost={onDeletePost} user={user} />
   }
 
   const fetchUser = async (uid) => {
@@ -202,14 +206,14 @@ export default function Profile({ route, navigation }) {
          {
            route.params &&  <TouchableOpacity
            activeOpacity={0.8} onPress={() => navigation.goBack()}>
-             <Icon name="chevron-back" size={25} color="black" style={{marginLeft: 10}} />
+             <Icon name="chevron-back" size={25} color="black" style={{marginLeft: 20}} />
            </TouchableOpacity>
          }
           <TouchableOpacity onPress={onHandleRefresh} activeOpacity={0.8}>
-            <Animated.View style={{ marginRight: 10, transform: [{
+            <Animated.View style={{ marginRight: 20, transform: [{
               rotate: refreshStyle
             }] }}>
-              <Icon name="refresh-outline" color="black" size={25} />
+              <Icon name="sync-outline" color="black" size={25} />
             </Animated.View>
           </TouchableOpacity>
         </View>

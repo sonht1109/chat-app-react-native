@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Alert, Dimensions, FlatList} from 'react-native'
+import { Alert, FlatList} from 'react-native'
 import * as S from '../../styles/HomeStyled'
 import firestore from '@react-native-firebase/firestore';
 import { AuthContext } from '../../navigations/AuthProvider';
