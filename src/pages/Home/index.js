@@ -1,11 +1,12 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { Alert, FlatList} from 'react-native'
+import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Alert, FlatList, View} from 'react-native'
 import * as S from '../../styles/HomeStyled'
 import firestore from '@react-native-firebase/firestore';
 import { AuthContext } from '../../navigations/AuthProvider';
 import storage from '@react-native-firebase/storage';
 import Skeleton from './Skeleton';
 import Post from '../../components/Post';
+import Icon from 'react-native-vector-icons/Ionicons'
 
 export default function Home({ navigation }) {
 
@@ -13,6 +14,21 @@ export default function Home({ navigation }) {
     const [loading, setLoading] = useState(true)
     const [onRefresh, setOnRefresh] = useState(false)
     const { user } = useContext(AuthContext)
+    const flatlistRef = useRef(null)
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerTitle: () =>  <Icon name="planet-outline" color="#3c5898" size={40} onPress={onFlatlistRefresh} /> 
+        })
+    }, [])
+    
+    const onFlatlistRefresh = () => {
+        flatlistRef.current.scrollToOffset({
+            offset: 0,
+            animated: true
+        })
+        setOnRefresh(prev => !prev)
+    }
 
     const fetchPosts = async () => {
         let arr = []
@@ -111,6 +127,7 @@ export default function Home({ navigation }) {
             {
                 !loading ?
                     <FlatList
+                        ref={flatlistRef}
                         data={posts}
                         keyExtractor={item => item.id.toString()}
                         renderItem={renderItem}

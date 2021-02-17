@@ -13,7 +13,7 @@ function Route() {
     const [initializing, setInitializing] = useState(true)
 
     const onAuthStateChanged = async (user) => {
-        // console.log(user);
+        console.log(user);
         // setUser(user)
         let userData = null
         if (user) {

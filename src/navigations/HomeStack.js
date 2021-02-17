@@ -13,12 +13,6 @@ export default function HomeStack() {
             <Stack.Screen
                 name='Home' component={Home}
                 options={({ navigation }) => ({
-                    headerTitle: () => <Icon name="planet-outline" color="#3c5898" size={40} /> ,
-                    headerTitleStyle: {
-                        fontSize: 18,
-                        color: "#3c5898",
-                        fontWeight: 'bold',
-                    },
                     headerTitleAlign: "center",
                     headerStyle: {
                         elevation: 0

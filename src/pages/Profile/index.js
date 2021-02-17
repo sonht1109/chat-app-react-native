@@ -8,6 +8,7 @@ import Skeleton from '../Home/Skeleton';
 import storage from '@react-native-firebase/storage';
 import Post from '../../components/Post';
 import Icon from 'react-native-vector-icons/Ionicons'
+import ProfileSkeleton from './ProfileSkeleton';
 
 export default function Profile({ route, navigation }) {
 
@@ -162,7 +163,7 @@ export default function Profile({ route, navigation }) {
       toValue: 1,
       useNativeDriver: true,
       duration: 500,
-      easing: Easing.bezier(.53,1.18,.67,.9)
+      easing: Easing.bezier(.53, 1.18, .67, .9)
     }).start(() => setOnRefresh(prev => !prev))
   }
 
@@ -187,8 +188,8 @@ export default function Profile({ route, navigation }) {
       <View style={styles.groupButton}>
         <TouchableOpacity activeOpacity={0.8}>
           <Text
-          style={styles.button}
-          onPress={() => navigation.navigate("EditProfile", {userData: userData})}>
+            style={styles.button}
+            onPress={() => navigation.navigate("EditProfile", { userData: userData })}>
             Edit
           </Text>
         </TouchableOpacity>
@@ -207,53 +208,61 @@ export default function Profile({ route, navigation }) {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
-        <View style={{ marginTop: 20, flexDirection: "row", justifyContent: route.params ? "space-between" : "flex-end" }}>
-         {
-           route.params &&  <TouchableOpacity
-           activeOpacity={0.8} onPress={() => navigation.goBack()}>
-             <Icon name="chevron-back" size={25} color="black" style={{marginLeft: 20}} />
-           </TouchableOpacity>
-         }
-          <TouchableOpacity onPress={onHandleRefresh} activeOpacity={0.8}>
-            <Animated.View style={{ marginRight: 20, transform: [{
-              rotate: refreshStyle
-            }] }}>
-              <Icon name="sync-outline" color="black" size={25} />
-            </Animated.View>
-          </TouchableOpacity>
-        </View>
-        <View style={{ marginVertical: 20 }}>
-          {/* avatar */}
-          <View style={{ alignItems: 'center' }}>
-            <CustomAvatar size={120} displayName={userData.displayName} uri={userData.avt} />
-            <Text style={styles.displayName}>{userData.displayName}</Text>
-            {
-              userData.about !== '' && <Text style={styles.about}>{userData.about}</Text>
-            }
-            {renderButtons()}
-          </View>
-          {/* some detail */}
-          <View style={styles.detailWrapper}>
-            <View style={styles.detail}>
-              <Text style={{ fontWeight: 'bold', fontSize: 24 }}>
-                {posts.length}
-              </Text>
-              <Text style={{ color: "#666" }}>Posts</Text>
-            </View>
-            <View style={styles.detail}>
-              <Text style={{ fontWeight: 'bold', fontSize: 24 }}>
-                {userData.followers.length}
-              </Text>
-              <Text style={{ color: "#666" }}>Followers</Text>
-            </View>
-            <View style={styles.detail}>
-              <Text style={{ fontWeight: 'bold', fontSize: 24 }}>
-                {userData.followings.length}
-              </Text>
-              <Text style={{ color: "#666" }}>Followings</Text>
-            </View>
-          </View>
-        </View>
+        {
+          !loading ?
+            <>
+              <View style={{ marginTop: 20, flexDirection: "row", justifyContent: route.params ? "space-between" : "flex-end" }}>
+                {
+                  route.params && <TouchableOpacity
+                    activeOpacity={0.8} onPress={() => navigation.goBack()}>
+                    <Icon name="chevron-back" size={25} color="black" style={{ marginLeft: 20 }} />
+                  </TouchableOpacity>
+                }
+                <TouchableOpacity onPress={onHandleRefresh} activeOpacity={0.8}>
+                  <Animated.View style={{
+                    marginRight: 20, transform: [{
+                      rotate: refreshStyle
+                    }]
+                  }}>
+                    <Icon name="sync-outline" color="black" size={25} />
+                  </Animated.View>
+                </TouchableOpacity>
+              </View>
+              <View style={{ marginVertical: 20 }}>
+                {/* avatar */}
+                <View style={{ alignItems: 'center' }}>
+                  <CustomAvatar size={120} displayName={userData.displayName} uri={userData.avt} />
+                  <Text style={styles.displayName}>{userData.displayName}</Text>
+                  {
+                    userData.about !== '' && <Text style={styles.about}>{userData.about}</Text>
+                  }
+                  {renderButtons()}
+                </View>
+                {/* some detail */}
+                <View style={styles.detailWrapper}>
+                  <View style={styles.detail}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 24 }}>
+                      {posts.length}
+                    </Text>
+                    <Text style={{ color: "#666" }}>Posts</Text>
+                  </View>
+                  <View style={styles.detail}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 24 }}>
+                      {userData.followers.length}
+                    </Text>
+                    <Text style={{ color: "#666" }}>Followers</Text>
+                  </View>
+                  <View style={styles.detail}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 24 }}>
+                      {userData.followings.length}
+                    </Text>
+                    <Text style={{ color: "#666" }}>Followings</Text>
+                  </View>
+                </View>
+              </View>
+            </>
+            : null
+        }
         {/* posts */}
         <S.Container bgColor="#fff">
           {
@@ -264,7 +273,10 @@ export default function Profile({ route, navigation }) {
                 renderItem={renderItem}
                 contentContainerStyle={{ paddingHorizontal: 20 }}
               /> :
-              <Skeleton />
+              <>
+                <ProfileSkeleton />
+                <Skeleton />
+              </>
           }
         </S.Container>
       </ScrollView>
