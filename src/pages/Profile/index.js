@@ -72,10 +72,6 @@ export default function Profile({ route, navigation }) {
     }
     fetchUser(uid)
     fetchPosts()
-    // navigation.addListener("focus", () => {
-    //   console.log('navigation listener');
-    //   setOnRefresh(prev => !prev)
-    // })
   }, [onRefresh, route.params])
 
   const onDeletePost = (id) => {
@@ -128,12 +124,11 @@ export default function Profile({ route, navigation }) {
   }
 
   const fetchUser = async (uid) => {
-    await firestore()
+    firestore()
       .collection('users')
       .doc(uid)
       .get()
       .then(doc => {
-        // setUser(doc.data())
         setUserData(doc.data())
       })
       .catch(e => console.log('err in fetching user,', e))
@@ -169,10 +164,10 @@ export default function Profile({ route, navigation }) {
       duration: 500,
       easing: Easing.bezier(.53, 1.18, .67, .9)
     }).start(() => {
+      setOnRefresh(prev => !prev)
       if(!route.params){
         setUser({...userData})
       }
-      setOnRefresh(prev => !prev)
     })
   }
 

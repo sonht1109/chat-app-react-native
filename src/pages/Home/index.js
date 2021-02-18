@@ -62,10 +62,6 @@ export default function Home({ navigation }) {
 
     useEffect(() => {
         fetchPosts()
-        navigation.addListener("focus", () => {
-            console.log('navigation listener');
-            setOnRefresh(prev => !prev)
-        })
     }, [onRefresh])
 
     const onDeletePost = (id) => {

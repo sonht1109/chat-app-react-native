@@ -24,20 +24,19 @@ export default function Post({ item, user, onDeletePost, navigation }) {
         return likes.includes(user.uid)
     }, [likes])
     
-    const fetchUserData = async() => {
-        await firestore()
-            .collection('users')
-            .doc(item.userId)
-            .get()
-            .then(doc => {
-                const {avt, displayName} = doc.data()
-                setUserData(prev => ({
-                    ...prev,
-                    avt,
-                    displayName
-                }))
-            })
-            .catch(e => console.log('err in fetching user,', e))
+    const fetchUserData = () => {
+        const subscriber = firestore()
+        .collection('users')
+        .doc(item.userId)
+        .onSnapshot(doc => {
+            const {avt, displayName} = doc.data()
+            setUserData(prev => ({
+                ...prev,
+                avt,
+                displayName
+            }))
+        })
+        return () => subscriber()
     }
 
     useEffect(() => {
