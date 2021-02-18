@@ -1,5 +1,3 @@
-import React from 'react'
-
 const timeConvertFromNow = time => {
     const period = Math.round(new Date().getTime() / 1000 - time)
     const mins = Math.floor(period / 60)

@@ -12,27 +12,25 @@ function Route() {
     const { user, setUser } = useContext(AuthContext)
     const [initializing, setInitializing] = useState(true)
 
-    const onAuthStateChanged = async (user) => {
-        console.log(user);
+    const onAuthStateChanged = async (userResponse) => {
         // setUser(user)
-        let userData = null
-        if (user) {
-            await firestore().collection('users').doc(user.uid)
+        if (userResponse) {
+            await firestore().collection('users').doc(userResponse.uid)
             .get()
             .then(async (doc) => {
                 if(!doc.exists){
-                    userData = {
-                        displayName: user.displayName ? user.displayName : "Social User",
-                        avt: user.photoURL,
-                        createAt: user.metadata.creationTime,
-                        phoneNumber: user.phoneNumber,
-                        uid: user.uid,
-                        email: user.email,
+                    let userData = {
+                        displayName: userResponse.displayName ? userResponse.displayName : "Social User",
+                        avt: userResponse.photoURL,
+                        createAt: userResponse.metadata.creationTime,
+                        phoneNumber: userResponse.phoneNumber,
+                        uid: userResponse.uid,
+                        email: userResponse.email,
                         about: '',
                         followings: [],
                         followers: []
                     }
-                    await firestore().collection('users').doc(user.uid)
+                    await firestore().collection('users').doc(userResponse.uid)
                         .set({ ...userData })
                         .then(() => {
                             setUser({ ...userData })
@@ -48,6 +46,7 @@ function Route() {
         else {
             setUser(null)
         }
+        console.log(user);
         if (initializing) setInitializing(false)
     }
 

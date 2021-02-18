@@ -148,18 +148,20 @@ export default function EditProfile({ navigation, route }) {
         about: userData.about,
         phoneNumber: userData.phoneNumber,
         age: userData.age,
-        avt: avtUrl
+        avt: avtImg === userData.avt ? avtImg : avtUrl
       })
-      .then(() => setLoading(false))
-      .then(() => Alert.alert('Profile updated', '', [
-        {
-          text: "OK",
-          onPress: () => {
-            setUser({ ...userData })
-            navigation.navigate("Profile")
+      .then(() => setUser({...userData}))
+      .then(() => {
+        setLoading(false)
+        Alert.alert('Profile updated', '', [
+          {
+            text: "OK",
+            onPress: () => {
+              navigation.navigate("Profile")
+            }
           }
-        }
-      ]))
+        ])
+      })
       .catch(e => console.log('err in updating userData', e))
   }
 

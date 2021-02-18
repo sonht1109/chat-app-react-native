@@ -12,7 +12,7 @@ import ProfileSkeleton from './ProfileSkeleton';
 
 export default function Profile({ route, navigation }) {
 
-  const { user, logout } = useContext(AuthContext)
+  const { user, logout, setUser } = useContext(AuthContext)
 
   const [userData, setUserData] = useState({ ...user })
   const [posts, setPosts] = useState([])
@@ -65,16 +65,17 @@ export default function Profile({ route, navigation }) {
   }, [])
 
   useEffect(() => {
+    console.log('refresh profile');
     let uid = user.uid
     if (route.params && route.params.userId) {
       uid = route.params.userId
     }
     fetchUser(uid)
     fetchPosts()
-    navigation.addListener("focus", () => {
-      console.log('navigation listener');
-      setOnRefresh(prev => !prev)
-    })
+    // navigation.addListener("focus", () => {
+    //   console.log('navigation listener');
+    //   setOnRefresh(prev => !prev)
+    // })
   }, [onRefresh, route.params])
 
   const onDeletePost = (id) => {
@@ -131,7 +132,10 @@ export default function Profile({ route, navigation }) {
       .collection('users')
       .doc(uid)
       .get()
-      .then(doc => setUserData(doc.data()))
+      .then(doc => {
+        // setUser(doc.data())
+        setUserData(doc.data())
+      })
       .catch(e => console.log('err in fetching user,', e))
   }
 

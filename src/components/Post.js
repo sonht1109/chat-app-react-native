@@ -17,11 +17,11 @@ export default function Post({ item, user, onDeletePost, navigation }) {
     const [userData, setUserData] = useState({
         avt: null,
         displayName: '',
-        uid: ''
+        uid: item.userId
     })
 
     const isLiked = useMemo(() => {
-        return likes.includes(userData.uid)
+        return likes.includes(user.uid)
     }, [likes])
     
     const fetchUserData = async() => {
@@ -33,7 +33,6 @@ export default function Post({ item, user, onDeletePost, navigation }) {
                 ...prev,
                 avt: doc.data().avt,
                 displayName: doc.data().displayName,
-                uid: doc.data().uid
             })))
             .catch(e => console.log('err in fetching user,', e))
     }
@@ -41,7 +40,6 @@ export default function Post({ item, user, onDeletePost, navigation }) {
     useEffect(() => {
         fetchUserData()
     }, [])
-    // console.log(userData);
 
     const onHandleLike = async (id) => {
         iconAnimated.setValue(0)
@@ -53,7 +51,7 @@ export default function Post({ item, user, onDeletePost, navigation }) {
         await firestore()
             .doc(`posts/${id}`)
             .update({
-                likes: !isLiked ? firestore.FieldValue.arrayUnion(userData.uid) : firestore.FieldValue.arrayRemove(userData.uid)
+                likes: !isLiked ? firestore.FieldValue.arrayUnion(user.uid) : firestore.FieldValue.arrayRemove(user.uid)
             })
             .then(async () => {
                 await firestore()
