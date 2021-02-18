@@ -168,7 +168,12 @@ export default function Profile({ route, navigation }) {
       useNativeDriver: true,
       duration: 500,
       easing: Easing.bezier(.53, 1.18, .67, .9)
-    }).start(() => setOnRefresh(prev => !prev))
+    }).start(() => {
+      if(!route.params){
+        setUser({...userData})
+      }
+      setOnRefresh(prev => !prev)
+    })
   }
 
   const renderButtons = () => {
