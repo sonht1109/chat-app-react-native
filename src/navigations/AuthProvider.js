@@ -59,9 +59,9 @@ function AuthProvider({ children }) {
                 }
             },
             signup: async (email, password, displayName) => {
-                console.log(displayName);
                 try {
                     await AsyncStorage.setItem("login.method", "google")
+                    await AsyncStorage.setItem("user.displayName", displayName)
                     await auth().createUserWithEmailAndPassword(email, password)
                     .catch(e => console.log('sign up with email', e))
                     Alert.alert('Sign up successful !')

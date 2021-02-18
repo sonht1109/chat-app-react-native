@@ -6,6 +6,7 @@ import MainStack from './MainStack';
 import { useState } from 'react/cjs/react.development';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function Route() {
 
@@ -14,13 +15,14 @@ function Route() {
 
     const onAuthStateChanged = async (userResponse) => {
         // setUser(user)
+        const displayNameInStorage = await AsyncStorage.getItem("user.displayName")
         if (userResponse) {
             await firestore().collection('users').doc(userResponse.uid)
             .get()
             .then(async (doc) => {
                 if(!doc.exists){
                     let userData = {
-                        displayName: userResponse.displayName ? userResponse.displayName : "Social User",
+                        displayName: userResponse.displayName ? userResponse.displayName : displayNameInStorage,
                         avt: userResponse.photoURL,
                         createAt: userResponse.metadata.creationTime,
                         phoneNumber: userResponse.phoneNumber,
@@ -48,6 +50,7 @@ function Route() {
         }
         console.log(user);
         if (initializing) setInitializing(false)
+        if(displayNameInStorage) await AsyncStorage.removeItem("user.displayName")
     }
 
     useEffect(() => {

@@ -29,11 +29,14 @@ export default function Post({ item, user, onDeletePost, navigation }) {
             .collection('users')
             .doc(item.userId)
             .get()
-            .then(doc => setUserData(prev => ({
-                ...prev,
-                avt: doc.data().avt,
-                displayName: doc.data().displayName,
-            })))
+            .then(doc => {
+                const {avt, displayName} = doc.data()
+                setUserData(prev => ({
+                    ...prev,
+                    avt,
+                    displayName
+                }))
+            })
             .catch(e => console.log('err in fetching user,', e))
     }
 
