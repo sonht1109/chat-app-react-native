@@ -10,7 +10,7 @@ import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import { AuthContext } from '../../navigations/AuthProvider';
 
-export default function EditProfile({ navigation, route }) {
+export default function EditProfile({ navigation }) {
 
   // const user = route.params.userData
   const { user, setUser } = useContext(AuthContext)
@@ -19,8 +19,8 @@ export default function EditProfile({ navigation, route }) {
   const [userData, setUserData] = useState({ ...user })
   const bs = useRef()
   const fall = new Animated.Value(1)
-  const [loading, setLoading] = useState(false)
   // 1: hide, 0: show
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => async () => {
     Keyboard.addListener("keyboardDidShow", () => {
@@ -175,6 +175,7 @@ export default function EditProfile({ navigation, route }) {
         renderContent={renderContent}
         renderHeader={renderHeader}
         enabledGestureInteraction
+        enabledContentGestureInteraction={false}
       />
       <Animated.ScrollView
         style={{
