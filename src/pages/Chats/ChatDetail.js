@@ -1,42 +1,26 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Text, View } from 'react-native'
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { Text, TextInput, View } from 'react-native';
 import { GiftedChat, Bubble, Send } from 'react-native-gifted-chat';
-import Icon from 'react-native-vector-icons/Ionicons'
+import Icon from 'react-native-vector-icons/Ionicons';
 import { AuthContext } from '../../navigations/AuthProvider';
 import database from '@react-native-firebase/database';
 
 export default function ChatDetail({ route }) {
-
-    const [messages, setMessages] = useState([])
-    const { guest } = route.params
-    const { user } = useContext(AuthContext)
-    const databaseRef = database().ref(`messages/${user.uid}/${guest.uid}`)
+    const [messages, setMessages] = useState([]);
+    const { guest } = route.params;
+    const { user } = useContext(AuthContext);
+    const databaseRef = database().ref(`messages/${user.uid}/${guest.uid}`);
 
     useEffect(() => {
-
-        let arr = []
-        // const onValueChange = databaseRef.on('value', snapshot => {
-        //         snapshot.forEach(data => {
-        //             // const {text, user, _id, createdAt} = data.val()
-        //             arr.push(data.val())
-        //         })
-        //         setMessages(arr.reverse())
-        //     })
-        databaseRef.once('value', snapshot => {
-            snapshot.forEach(data => {
-                arr.unshift(data.val())
-            })
-        })
-        setMessages(arr)
-        
-        // const onChildAdded = databaseRef.on('child_added', data => {
-        //     arr.unshift(data.val())
-        // })
-
-        // return () => databaseRef.off('child_added', onChildAdded)
-
+        let arr = [];
+        databaseRef.once('value', (snapshot) => {
+            snapshot.forEach((data) => {
+                arr.unshift(data.val());
+            });
+        });
+        setMessages(arr);
     }, []);
-    console.log(messages)
+    console.log(messages);
 
     const onSend = useCallback((messages = []) => {
         const message = {
@@ -46,15 +30,13 @@ export default function ChatDetail({ route }) {
             user: {
                 _id: user.uid,
                 name: user.displayName,
-                avatar: user.avt
-            }
-        }
-        databaseRef.push(message)
-        database()
-        .ref('messages')
-        .child(guest.uid)
-        .child(user.uid)
-        .push(message)
+                avatar: user.avt,
+            },
+        };
+        // push message to sender-message
+        databaseRef.push(message);
+        // push message to receiver-message
+        database().ref('messages').child(guest.uid).child(user.uid).push(message);
 
         setMessages((previousMessages) =>
             GiftedChat.append(previousMessages, messages),
@@ -67,8 +49,8 @@ export default function ChatDetail({ route }) {
                 <View>
                     <Icon
                         name="send-outline"
-                        style={{ marginBottom: 5, marginRight: 5 }}
-                        size={30}
+                        style={{ marginBottom: 10, marginRight: 5, }}
+                        size={25}
                         color="#3c5898"
                     />
                 </View>
@@ -85,8 +67,8 @@ export default function ChatDetail({ route }) {
                         backgroundColor: '#3c5898',
                     },
                     left: {
-                        backgroundColor: "white"
-                    }
+                        backgroundColor: 'white',
+                    },
                 }}
                 textStyle={{
                     right: {
@@ -98,30 +80,35 @@ export default function ChatDetail({ route }) {
     };
 
     const renderChatEmpty = () => {
-        return (
-            <Text>Let's share something</Text>
-        )
-    }
+        return <Text>Let's share something</Text>;
+    };
 
     const scrollToBottomComponent = () => {
-        return (
-            <Icon name="caret-down-circle-outline" color="#2e64e5" size={25} />
-        )
+        return <Icon name="caret-down-circle-outline" color="#2e64e5" size={25} />;
+    };
+
+    const renderActions = ()=> {
+        return <Icon name="camera-outline" size={25} color="#3c5898" style={{alignSelf: "center", marginLeft: 5}} />
     }
 
     return (
-        <GiftedChat
+        <View style={{flex: 1}}>
+            <GiftedChat
             messages={messages}
             onSend={(mess) => onSend(mess)}
             user={{
-                _id: user.uid
+                _id: user.uid,
             }}
             renderBubble={renderBubble}
             renderSend={renderSend}
             scrollToBottom
             isTyping
             scrollToBottomComponent={scrollToBottomComponent}
-            // renderChatEmpty={renderChatEmpty}
+            renderChatEmpty={renderChatEmpty}
+            isLoadingEarlier
+            placeholder="Aa"
+            renderActions={renderActions}
         />
-    )
+        </View>
+    );
 }
