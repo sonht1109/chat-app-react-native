@@ -35,6 +35,7 @@ export default function ChatsStack(){
                         headerTitleAlign: "center",
                         headerTitleStyle: {
                             fontWeight: 'bold',
+                            fontSize: 16,
                             color: "#3c5898"
                         },
                         headerStyle: {

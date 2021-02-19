@@ -10,51 +10,51 @@ export default function ChatDetail({ route }) {
     const [messages, setMessages] = useState([])
     const { guest } = route.params
     const { user } = useContext(AuthContext)
-
+    const databaseRef = database().ref(`messages/${user.uid}/${guest.uid}`)
 
     useEffect(() => {
 
-        const onValueChange = database()
-            .ref("messages")
-            .child(user.uid)
-            .child(guest.uid)
-            .on('value', snapshot => {
-                let messages = []
-                snapshot.forEach(data => {
-                    const {text, user, _id, createdAt} = data.val()
-                    messages.push({
-                        _id,
-                        user: {...user},
-                        text,
-                        createdAt
-                    })
-                })
-                setMessages(messages.reverse())
+        let arr = []
+        // const onValueChange = databaseRef.on('value', snapshot => {
+        //         snapshot.forEach(data => {
+        //             // const {text, user, _id, createdAt} = data.val()
+        //             arr.push(data.val())
+        //         })
+        //         setMessages(arr.reverse())
+        //     })
+        databaseRef.once('value', snapshot => {
+            snapshot.forEach(data => {
+                arr.unshift(data.val())
             })
+        })
+        setMessages(arr)
+        
+        // const onChildAdded = databaseRef.on('child_added', data => {
+        //     arr.unshift(data.val())
+        // })
 
-        return () => database().ref("messages")
-            .child(user.uid)
-            .child(guest.uid)
-            .off('value', onValueChange)
+        // return () => databaseRef.off('child_added', onChildAdded)
 
     }, []);
     console.log(messages)
 
     const onSend = useCallback((messages = []) => {
+        const message = {
+            _id: messages[0]._id,
+            text: messages[0].text,
+            createdAt: new Date().toString(),
+            user: {
+                _id: user.uid,
+                name: user.displayName,
+                avatar: user.avt
+            }
+        }
+        databaseRef.push(message)
         database()
-            .ref('messages')
-            .child(user.uid)
-            .child(guest.uid)
-            .push({
-                _id: messages[0]._id,
-                text: messages[0].text,
-                createdAt: new Date().toString(),
-                user: {
-                    _id: user.uid,
-                    name: user.displayName,
-                    avatar: user.avt
-                }
-            })
+        .ref('messages')
+        .child(guest.uid)
+        .child(user.uid)
+        .push(message)
 
         setMessages((previousMessages) =>
             GiftedChat.append(previousMessages, messages),
