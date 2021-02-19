@@ -9,6 +9,7 @@ import storage from '@react-native-firebase/storage';
 import Post from '../../components/Post';
 import Icon from 'react-native-vector-icons/Ionicons'
 import ProfileSkeleton from './ProfileSkeleton';
+import database from '@react-native-firebase/database';
 
 export default function Profile({ route, navigation }) {
 
@@ -171,6 +172,16 @@ export default function Profile({ route, navigation }) {
     })
   }
 
+  const onChat = () => {
+    navigation.navigate("ChatsStack", {screen: "ChatDetail", params: {guest: userData}})
+    database()
+    .ref('message-to-users')
+    .child(user.uid)
+    .push({
+      uid: userData.uid
+    })
+  }
+
   const renderButtons = () => {
     if (userData.uid !== user.uid) {
       return (
@@ -180,7 +191,7 @@ export default function Profile({ route, navigation }) {
               {isFollowed ? 'Unfollow' : 'Follow'}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.8}>
+          <TouchableOpacity activeOpacity={0.8} onPress={onChat}>
             <Text style={styles.button}>
               Message
             </Text>

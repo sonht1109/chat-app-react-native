@@ -48,7 +48,7 @@ function Route() {
         else {
             setUser(null)
         }
-        console.log(user);
+        // console.log(user);
         if (initializing) setInitializing(false)
         if(displayNameInStorage) await AsyncStorage.removeItem("user.displayName")
     }

@@ -1,9 +1,8 @@
 import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack';
 import Profile from '../pages/Profile/index';
-import Icon from 'react-native-vector-icons/Ionicons'
 import EditProfile from '../pages/Profile/EditProfile';
-import CustomBackArrow from './CustomBackArrow';
+import CustomBackArrow from '../components/CustomBackArrow';
 
 const Stack = createStackNavigator()
 
