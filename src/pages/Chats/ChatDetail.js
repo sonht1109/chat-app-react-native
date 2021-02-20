@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, View, StyleSheet, Dimensions, Image, ScrollView } from 'react-native';
 import { GiftedChat, Bubble, Send } from 'react-native-gifted-chat';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { AuthContext } from '../../navigations/AuthProvider';
@@ -7,12 +7,15 @@ import database from '@react-native-firebase/database';
 import BottomSheet from 'reanimated-bottom-sheet';
 import Animated from 'react-native-reanimated';
 import ImagePicker from 'react-native-image-crop-picker';
+import ScaledImage from '../../components/ScaledImage';
+
+const { width } = Dimensions.get('screen')
 
 export default function ChatDetail({ route }) {
     const [messages, setMessages] = useState([]);
     const { guest } = route.params;
     const { user } = useContext(AuthContext);
-    const [image, setImage] = useState(null)
+    const [image, setImage] = useState([])
     const databaseRef = database().ref(`messages/${user.uid}/${guest.uid}`);
 
     const bs = useRef()
@@ -112,8 +115,6 @@ export default function ChatDetail({ route }) {
     const handleTakeAPhoto = () => {
         ImagePicker.openCamera({
             compressImageQuality: 0.6,
-            width: 300,
-            height: 300,
             cropping: true,
         }).then(image => {
             setImage(image.path)
@@ -124,30 +125,71 @@ export default function ChatDetail({ route }) {
 
     const handleGetPhotoFromGallery = () => {
         ImagePicker.openPicker({
-            width: 300,
-            height: 300,
-            cropping: true
-        }).then(image => {
-            setImage(image.path)
+            multiple: true,
+        }).then(images => {
+            let arr = []
+            images.forEach(item => {
+                if (!image.includes(item.path)) {
+                    arr.push(item.path)
+                }
+            })
+            setImage(prev => [...prev, ...arr])
             bs.current.snapTo(1)
         })
             .catch(err => console.log(err))
     }
+    console.log(image)
+
 
     const renderContent = () => {
         return (
             <View style={styles.bsContent}>
                 <TouchableOpacity activeOpacity={0.8}
-                onPress={handleTakeAPhoto}>
+                    onPress={handleTakeAPhoto}>
                     <Text style={styles.bsButton}>Take a photo</Text>
                 </TouchableOpacity>
                 <TouchableOpacity activeOpacity={0.8}
-                onPress={handleGetPhotoFromGallery}>
+                    onPress={handleGetPhotoFromGallery}>
                     <Text style={styles.bsButton}>Choose from gallery</Text>
                 </TouchableOpacity>
             </View>
         )
     }
+
+    const onDeleteImageFromFooter = (index) => {
+        let arr = [...image]
+        console.log(arr.splice(index, 1))
+        // setImage(image.splice(index, 1))
+    }
+
+    const renderChatFooter = () => {
+        if (image.length) {
+            return (
+                <View style={{ height: 80, backgroundColor: "transparent" }}>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                    >
+                        {
+                            image && image.map((item, index) => {
+                                return (
+                                    <View style={{ position: 'relative', marginHorizontal: 5 }}>
+                                        <View style={styles.chatFooterImageWrapper}>
+                                            <Icon name="close-circle-outline" size={30} color="white" onPress={() => onDeleteImageFromFooter(index)} />
+                                        </View>
+                                        <ScaledImage uri={item} height={80} borderRadius={10} />
+                                    </View>
+                                )
+                            })
+                        }
+                    </ScrollView>
+                </View>
+            )
+        }
+        return null
+    }
+
+    console.log(image)
 
     return (
         <View style={{ flex: 1 }}>
@@ -177,6 +219,7 @@ export default function ChatDetail({ route }) {
                     isLoadingEarlier
                     placeholder="Aa"
                     renderActions={renderActions}
+                    renderChatFooter={renderChatFooter}
                 />
             </Animated.View>
         </View>
@@ -212,4 +255,16 @@ const styles = StyleSheet.create({
         shadowOpacity: 1,
         elevation: 2 //android,
     },
+    chatFooterImageWrapper: {
+        position: "absolute",
+        borderRadius: 10,
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 10
+    }
 })

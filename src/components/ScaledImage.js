@@ -40,7 +40,7 @@ export default function ScaledImage(props) {
             <Animated.Image
             source={{uri: props.uri}}
             onLoad={onLoadingImage}
-            style={{height: height, width: width, opacity: animated}}
+            style={{height: height, width: width, opacity: animated, borderRadius: props.borderRadius}}
             />
         )
     }
