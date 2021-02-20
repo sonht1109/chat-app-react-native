@@ -9,7 +9,7 @@ import Animated from 'react-native-reanimated';
 import ImagePicker from 'react-native-image-crop-picker';
 import ScaledImage from '../../components/ScaledImage';
 
-const { width } = Dimensions.get('screen')
+// const { width } = Dimensions.get('screen')
 
 export default function ChatDetail({ route }) {
     const [messages, setMessages] = useState([]);
@@ -45,6 +45,7 @@ export default function ChatDetail({ route }) {
                 name: user.displayName,
                 avatar: user.avt,
             },
+            image: image
         };
         // push message to sender-message
         databaseRef.push(message);
@@ -54,6 +55,7 @@ export default function ChatDetail({ route }) {
         setMessages((previousMessages) =>
             GiftedChat.append(previousMessages, messages),
         );
+        setImage([])
     }, []);
 
     const renderSend = (props) => {
@@ -117,7 +119,7 @@ export default function ChatDetail({ route }) {
             compressImageQuality: 0.6,
             cropping: true,
         }).then(image => {
-            setImage(image.path)
+            setImage(prev => [...prev, image.path])
             bs.current.snapTo(1)
         })
             .catch(err => console.log(err))
@@ -157,9 +159,8 @@ export default function ChatDetail({ route }) {
     }
 
     const onDeleteImageFromFooter = (index) => {
-        let arr = [...image]
-        console.log(arr.splice(index, 1))
-        // setImage(image.splice(index, 1))
+        let arr = image.slice(0, index).concat(image.slice(index+1))
+        setImage([...arr])
     }
 
     const renderChatFooter = () => {
@@ -171,7 +172,7 @@ export default function ChatDetail({ route }) {
                         showsHorizontalScrollIndicator={false}
                     >
                         {
-                            image && image.map((item, index) => {
+                            image.length && image.map((item, index) => {
                                 return (
                                     <View style={{ position: 'relative', marginHorizontal: 5 }}>
                                         <View style={styles.chatFooterImageWrapper}>
@@ -215,7 +216,8 @@ export default function ChatDetail({ route }) {
                     scrollToBottom
                     isTyping
                     scrollToBottomComponent={scrollToBottomComponent}
-                    renderChatEmpty={renderChatEmpty}
+                    // renderChatEmpty={renderChatEmpty}
+                    alwaysShowSend
                     isLoadingEarlier
                     placeholder="Aa"
                     renderActions={renderActions}
