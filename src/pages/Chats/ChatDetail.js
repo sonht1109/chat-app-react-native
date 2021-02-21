@@ -8,6 +8,8 @@ import BottomSheet from 'reanimated-bottom-sheet';
 import Animated from 'react-native-reanimated';
 import ImagePicker from 'react-native-image-crop-picker';
 import ScaledImage from '../../components/ScaledImage';
+import storage from '@react-native-firebase/storage';
+import { ActivityIndicator } from 'react-native-paper';
 
 // const { width } = Dimensions.get('screen')
 
@@ -18,6 +20,7 @@ export default function ChatDetail({ route }) {
     const [image, setImage] = useState(null)
     const databaseRef = database().ref(`messages/${user.uid}/${guest.uid}`);
 
+    const [sendingImage, setSendingImage] = useState(false)
     const [text, setText] = useState('')
 
     const bs = useRef()
@@ -61,12 +64,30 @@ export default function ChatDetail({ route }) {
         setImage(null)
     }, [image]);
 
-    const handleUploadImage = () => {
-        
+    const handleUploadImage = async (image) => {
+        let imgUrl = null
+        if (image) {
+            const fileName = image.substring(image.lastIndexOf('/') + 1)
+            const extension = fileName.substring(fileName.lastIndexOf('.') + 1)
+            fileName.substring(0, fileName.lastIndexOf('.')) + '-' + Date.now()
+            const timeStamp = fileName.substring(0, fileName.lastIndexOf('.')) + '-' + Date.now()
+
+            const storageRef = storage().ref(`messageImages/${user.uid}_${guest.uid}/${timeStamp}.${extension}`)
+
+            await storageRef.putFile(image)
+                .then(async () => {
+                    imgUrl = await storageRef.getDownloadURL()
+                    setImage(null)
+                })
+                .catch(e => console.log('err in storing avt', e))
+        }
+        return imgUrl
     }
 
-    const handleCustomOnSend = (messageIdGenerator) => {
+    const handleCustomOnSend = async (messageIdGenerator) => {
         if (image || text !== '') {
+            let tempImage = image
+            setImage(null)
             const message = {
                 _id: messageIdGenerator(),
                 text: text,
@@ -76,16 +97,22 @@ export default function ChatDetail({ route }) {
                     name: user.displayName,
                     avatar: user.avt,
                 },
-                image: image
+                image: null
             };
+            setText('')
+            if (tempImage) {
+                let imageUrl = await handleUploadImage(tempImage)
+                message.image = imageUrl
+            }
             // push message to sender-message
             databaseRef.push(message);
             // push message to receiver-message
             database().ref('messages').child(guest.uid).child(user.uid).push(message);
-            setImage(null)
-            setText('')
+            if(sendingImage) setSendingImage(false)
         }
     }
+    console.log(sendingImage)
+
 
     const renderSend = (props) => {
         const { sendButtonProps, messageIdGenerator, onSend } = props
@@ -230,7 +257,11 @@ export default function ChatDetail({ route }) {
                     <View
                         style={{ position: 'relative', marginHorizontal: 5, alignSelf: "flex-end" }}>
                         <View style={styles.chatFooterImageWrapper}>
-                            <Icon name="close-circle-outline" size={30} color="white" onPress={() => onDeleteImageFromFooter()} />
+                            {
+                                sendingImage ?
+                                    <ActivityIndicator size={20} color="white" /> :
+                                    <Icon name="close-circle-outline" size={30} color="white" onPress={() => onDeleteImageFromFooter()} />
+                            }
                         </View>
                         <ScaledImage uri={image} height={80} borderRadius={10} />
                     </View>
