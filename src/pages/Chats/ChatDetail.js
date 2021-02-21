@@ -15,8 +15,10 @@ export default function ChatDetail({ route }) {
     const [messages, setMessages] = useState([]);
     const { guest } = route.params;
     const { user } = useContext(AuthContext);
-    const [image, setImage] = useState([])
+    const [image, setImage] = useState(null)
     const databaseRef = database().ref(`messages/${user.uid}/${guest.uid}`);
+
+    const [text, setText] = useState('')
 
     const bs = useRef()
     const fall = new Animated.Value(1)
@@ -26,19 +28,19 @@ export default function ChatDetail({ route }) {
     }
 
     useEffect(() => {
-        let arr = [];
-        databaseRef.once('value', (snapshot) => {
-            snapshot.forEach((data) => {
-                arr.unshift(data.val());
-            });
-        });
-        setMessages(arr);
+        const onAddChild = databaseRef.on('child_added', data => {
+            setMessages((prev) => {
+                prev.unshift(data.val())
+                return [...prev]
+            })
+        })
+        return () => databaseRef.off('child_added', onAddChild)
     }, []);
 
-    const onSend = useCallback((messages = []) => {
+    const onSend = useCallback((messData = []) => {
         const message = {
-            _id: messages[0]._id,
-            text: messages[0].text,
+            _id: messData[0]._id,
+            text: messData[0].text,
             createdAt: new Date().toString(),
             user: {
                 _id: user.uid,
@@ -52,15 +54,47 @@ export default function ChatDetail({ route }) {
         // push message to receiver-message
         database().ref('messages').child(guest.uid).child(user.uid).push(message);
 
-        setMessages((previousMessages) =>
-            GiftedChat.append(previousMessages, messages),
-        );
-        setImage([])
-    }, []);
+        // setMessages((previousMessages) =>
+        //     GiftedChat.append(previousMessages, messages),
+        // );
+        // GiftedChat.append(messages.unshift(message))
+        setImage(null)
+    }, [image]);
+
+    const handleUploadImage = () => {
+        
+    }
+
+    const handleCustomOnSend = (messageIdGenerator) => {
+        if (image || text !== '') {
+            const message = {
+                _id: messageIdGenerator(),
+                text: text,
+                createdAt: new Date().toString(),
+                user: {
+                    _id: user.uid,
+                    name: user.displayName,
+                    avatar: user.avt,
+                },
+                image: image
+            };
+            // push message to sender-message
+            databaseRef.push(message);
+            // push message to receiver-message
+            database().ref('messages').child(guest.uid).child(user.uid).push(message);
+            setImage(null)
+            setText('')
+        }
+    }
 
     const renderSend = (props) => {
+        const { sendButtonProps, messageIdGenerator, onSend } = props
         return (
-            <Send {...props}>
+            <Send {...props} sendButtonProps={{
+                ...sendButtonProps, onPress: () => {
+                    handleCustomOnSend(messageIdGenerator, onSend)
+                }
+            }}>
                 <View>
                     <Icon
                         name="send-outline"
@@ -119,7 +153,8 @@ export default function ChatDetail({ route }) {
             compressImageQuality: 0.6,
             cropping: true,
         }).then(image => {
-            setImage(prev => [...prev, image.path])
+            // setImage(prev => [...prev, image.path])
+            setImage(image.path)
             bs.current.snapTo(1)
         })
             .catch(err => console.log(err))
@@ -127,21 +162,24 @@ export default function ChatDetail({ route }) {
 
     const handleGetPhotoFromGallery = () => {
         ImagePicker.openPicker({
-            multiple: true,
-        }).then(images => {
-            let arr = []
-            images.forEach(item => {
-                if (!image.includes(item.path)) {
-                    arr.push(item.path)
-                }
-            })
-            setImage(prev => [...prev, ...arr])
+            cropping: true,
+            compressImageQuality: 0.6
+        }).then(image => {
+            /**
+             * if you want to choose multiple images
+             */
+            // let arr = []
+            // images.forEach(item => {
+            //     if (!image.includes(item.path)) {
+            //         arr.push(item.path)
+            //     }
+            // })
+            // setImage(prev => [...prev, ...arr])
+            setImage(image.path)
             bs.current.snapTo(1)
         })
             .catch(err => console.log(err))
     }
-    console.log(image)
-
 
     const renderContent = () => {
         return (
@@ -158,39 +196,49 @@ export default function ChatDetail({ route }) {
         )
     }
 
-    const onDeleteImageFromFooter = (index) => {
-        let arr = image.slice(0, index).concat(image.slice(index+1))
-        setImage([...arr])
+    const onDeleteImageFromFooter = () => {
+        // let arr = image.slice(0, index).concat(image.slice(index + 1))
+        // setImage([...arr])
+        setImage(null)
     }
 
     const renderChatFooter = () => {
-        if (image.length) {
+        if (image) {
             return (
-                <View style={{ height: 80, backgroundColor: "transparent" }}>
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                    >
-                        {
-                            image.length && image.map((item, index) => {
-                                return (
-                                    <View style={{ position: 'relative', marginHorizontal: 5 }}>
-                                        <View style={styles.chatFooterImageWrapper}>
-                                            <Icon name="close-circle-outline" size={30} color="white" onPress={() => onDeleteImageFromFooter(index)} />
-                                        </View>
-                                        <ScaledImage uri={item} height={80} borderRadius={10} />
-                                    </View>
-                                )
-                            })
-                        }
-                    </ScrollView>
+                // <View style={{ height: 80, backgroundColor: "transparent" }}>
+                //     <ScrollView
+                //         horizontal
+                //         showsHorizontalScrollIndicator={false}
+                //     >
+                //         {
+                //             image.length && image.map((item, index) => {
+                //                 return (
+                //                     <View
+                //                     style={{ position: 'relative', marginHorizontal: 5 }}
+                //                     key={'image' + index}>
+                //                         <View style={styles.chatFooterImageWrapper}>
+                //                             <Icon name="close-circle-outline" size={30} color="white" onPress={() => onDeleteImageFromFooter(index)} />
+                //                         </View>
+                //                         <ScaledImage uri={item} height={80} borderRadius={10} />
+                //                     </View>
+                //                 )
+                //             })
+                //         }
+                //     </ScrollView>
+                // </View>
+                <View style={{ alignItems: "center" }}>
+                    <View
+                        style={{ position: 'relative', marginHorizontal: 5, alignSelf: "flex-end" }}>
+                        <View style={styles.chatFooterImageWrapper}>
+                            <Icon name="close-circle-outline" size={30} color="white" onPress={() => onDeleteImageFromFooter()} />
+                        </View>
+                        <ScaledImage uri={image} height={80} borderRadius={10} />
+                    </View>
                 </View>
             )
         }
         return null
     }
-
-    console.log(image)
 
     return (
         <View style={{ flex: 1 }}>
@@ -207,14 +255,16 @@ export default function ChatDetail({ route }) {
             <Animated.View style={{ flex: 1, opacity: Animated.add(0.3, Animated.multiply(fall, 1)) }}>
                 <GiftedChat
                     messages={messages}
-                    onSend={(mess) => onSend(mess)}
+                    onSend={mess => onSend(mess)}
                     user={{
                         _id: user.uid,
                     }}
                     renderBubble={renderBubble}
                     renderSend={renderSend}
                     scrollToBottom
+                    text={text}
                     isTyping
+                    onInputTextChanged={text => setText(text)}
                     scrollToBottomComponent={scrollToBottomComponent}
                     // renderChatEmpty={renderChatEmpty}
                     alwaysShowSend
@@ -264,7 +314,7 @@ const styles = StyleSheet.create({
         left: 0,
         bottom: 0,
         right: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundColor: "rgba(0, 0, 0, 0.4)",
         justifyContent: "center",
         alignItems: "center",
         zIndex: 10
