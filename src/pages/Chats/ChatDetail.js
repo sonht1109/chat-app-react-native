@@ -20,8 +20,9 @@ export default function ChatDetail({ route }) {
     const [image, setImage] = useState(null)
     const databaseRef = database().ref(`messages/${user.uid}/${guest.uid}`);
 
-    const [sendingImage, setSendingImage] = useState(false)
     const [text, setText] = useState('')
+    const [paging, setPaging] = useState(1)
+    const [isLoadingEarlier, setIsLoadingEalier] = useState(true)
 
     const bs = useRef()
     const fall = new Animated.Value(1)
@@ -30,39 +31,20 @@ export default function ChatDetail({ route }) {
         bs.current.snapTo(0)
     }
 
-    useEffect(() => {
-        const onAddChild = databaseRef.on('child_added', data => {
-            setMessages((prev) => {
-                prev.unshift(data.val())
-                return [...prev]
+    const onValueChanged = useCallback(() => {
+        databaseRef.orderByChild('createdAt').limitToLast(paging * 15).on('value', snapshot => {
+            let arr = []
+            snapshot.forEach(data => {
+                arr.unshift(data.val())
             })
+            setMessages(arr)
         })
-        return () => databaseRef.off('child_added', onAddChild)
-    }, []);
+    }, [paging])
 
-    const onSend = useCallback((messData = []) => {
-        const message = {
-            _id: messData[0]._id,
-            text: messData[0].text,
-            createdAt: new Date().toString(),
-            user: {
-                _id: user.uid,
-                name: user.displayName,
-                avatar: user.avt,
-            },
-            image: image
-        };
-        // push message to sender-message
-        databaseRef.push(message);
-        // push message to receiver-message
-        database().ref('messages').child(guest.uid).child(user.uid).push(message);
-
-        // setMessages((previousMessages) =>
-        //     GiftedChat.append(previousMessages, messages),
-        // );
-        // GiftedChat.append(messages.unshift(message))
-        setImage(null)
-    }, [image]);
+    useEffect(() => {
+        onValueChanged()
+        return () => databaseRef.off('value', onValueChanged)
+    }, [paging]);
 
     const handleUploadImage = async (image) => {
         let imgUrl = null
@@ -96,8 +78,11 @@ export default function ChatDetail({ route }) {
                     name: user.displayName,
                     avatar: user.avt,
                 },
-                image: null
+                image: image,
+                pending: true,
+                sent: false,
             };
+            setMessages(prev => GiftedChat.append(prev, message))
             setText('')
             setImage(null)
             if (tempImage) {
@@ -105,14 +90,11 @@ export default function ChatDetail({ route }) {
                 message.image = imageUrl
             }
             // push message to sender-message
-            databaseRef.push(message);
+            databaseRef.push({ ...message, pending: false, sent: true });
             // push message to receiver-message
-            database().ref('messages').child(guest.uid).child(user.uid).push(message);
-            if(sendingImage) setSendingImage(false)
+            database().ref('messages').child(guest.uid).child(user.uid).push({ ...message, pending: false, sent: true });
         }
     }
-    console.log(sendingImage)
-
 
     const renderSend = (props) => {
         const { sendButtonProps, messageIdGenerator, onSend } = props
@@ -156,7 +138,11 @@ export default function ChatDetail({ route }) {
     };
 
     const renderChatEmpty = () => {
-        return <Text>Let's share something</Text>;
+        return(
+            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                <Text style={{fontWeight: "700", color: "#bbb", fontSize: 20}}>Let's share something</Text>
+            </View>
+        );
     };
 
     const scrollToBottomComponent = () => {
@@ -257,11 +243,7 @@ export default function ChatDetail({ route }) {
                     <View
                         style={{ position: 'relative', marginHorizontal: 5, alignSelf: "flex-end" }}>
                         <View style={styles.chatFooterImageWrapper}>
-                            {
-                                sendingImage ?
-                                    <ActivityIndicator size={20} color="white" /> :
-                                    <Icon name="close-circle-outline" size={30} color="white" onPress={() => onDeleteImageFromFooter()} />
-                            }
+                            <Icon name="close-circle-outline" size={30} color="white" onPress={() => onDeleteImageFromFooter()} />
                         </View>
                         <ScaledImage uri={image} height={80} borderRadius={10} />
                     </View>
@@ -286,20 +268,24 @@ export default function ChatDetail({ route }) {
             <Animated.View style={{ flex: 1, opacity: Animated.add(0.3, Animated.multiply(fall, 1)) }}>
                 <GiftedChat
                     messages={messages}
-                    onSend={mess => onSend(mess)}
+                    onLoadEarlier={() => {
+                        console.warn('onloadealier')
+                    }}
+                    isLoadingEarlier={isLoadingEarlier}
+                    infiniteScroll={true}
                     user={{
                         _id: user.uid,
                     }}
+                    // inverted={messages.length === 0}
+                    messagesContainerStyle={{ transform: [ { scaleY: messages.length === 0 ? -1 : 1 } ] }}
                     renderBubble={renderBubble}
                     renderSend={renderSend}
                     scrollToBottom
                     text={text}
-                    isTyping
                     onInputTextChanged={text => setText(text)}
                     scrollToBottomComponent={scrollToBottomComponent}
-                    // renderChatEmpty={renderChatEmpty}
+                    renderChatEmpty={renderChatEmpty}
                     alwaysShowSend
-                    isLoadingEarlier
                     placeholder="Aa"
                     renderActions={renderActions}
                     renderChatFooter={renderChatFooter}
