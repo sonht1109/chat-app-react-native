@@ -19,9 +19,7 @@ export default function Chats({ navigation }) {
                 let users = []
                 snapshot.forEach(data => {
                     const { uid } = data.val()
-                    users.push({
-                        uid
-                    })
+                    users.unshift({uid})
                 })
                 setUsers(users)
             })

@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Text, TouchableOpacity, View, StyleSheet, Dimensions, Image, ScrollView } from 'react-native';
+import { Text, TouchableOpacity, View, StyleSheet, Dimensions, Image, ScrollView, Keyboard } from 'react-native';
 import { GiftedChat, Bubble, Send } from 'react-native-gifted-chat';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { AuthContext } from '../../navigations/AuthProvider';
@@ -9,9 +9,8 @@ import Animated from 'react-native-reanimated';
 import ImagePicker from 'react-native-image-crop-picker';
 import ScaledImage from '../../components/ScaledImage';
 import storage from '@react-native-firebase/storage';
-import { ActivityIndicator } from 'react-native-paper';
 
-// const { width } = Dimensions.get('screen')
+// const { width, height } = Dimensions.get('window')
 
 export default function ChatDetail({ route }) {
     const [messages, setMessages] = useState([]);
@@ -22,7 +21,7 @@ export default function ChatDetail({ route }) {
 
     const [text, setText] = useState('')
     const [paging, setPaging] = useState(1)
-    const [isLoadingEarlier, setIsLoadingEalier] = useState(true)
+    // const [isLoadingEarlier, setIsLoadingEalier] = useState(true)
 
     const bs = useRef()
     const fall = new Animated.Value(1)
@@ -32,7 +31,7 @@ export default function ChatDetail({ route }) {
     }
 
     const onValueChanged = useCallback(() => {
-        databaseRef.orderByChild('createdAt').limitToLast(paging * 15).on('value', snapshot => {
+        databaseRef.limitToLast(paging * 15).on('value', snapshot => {
             let arr = []
             snapshot.forEach(data => {
                 arr.unshift(data.val())
@@ -44,7 +43,7 @@ export default function ChatDetail({ route }) {
     useEffect(() => {
         onValueChanged()
         return () => databaseRef.off('value', onValueChanged)
-    }, [paging]);
+    }, []);
 
     const handleUploadImage = async (image) => {
         let imgUrl = null
@@ -94,15 +93,11 @@ export default function ChatDetail({ route }) {
             // push message to receiver-message
             database().ref('messages').child(guest.uid).child(user.uid).push({ ...message, pending: false, sent: true });
             //if this is the first message
-            handleIfThisIsTheFirstMessage()
+            if(messages.length === 0){
+                database().ref('message-to-users').child(guest.uid).push({uid: user.uid})
+            }
         }
     }
-
-    const handleIfThisIsTheFirstMessage = useCallback(() => {
-        if(messages.length === 0){
-            database().ref('message-to-users').child(guest.uid).push({uid: user.uid})
-        }
-    }, [messages])
 
     const renderSend = (props) => {
         const { sendButtonProps, messageIdGenerator, onSend } = props
@@ -261,6 +256,11 @@ export default function ChatDetail({ route }) {
         return null
     }
 
+    const isCloseToTop = ({layoutMeasurement, contentOffset, contentSize}) => {
+        return contentSize.height - layoutMeasurement.height <= contentOffset.y
+        // minus paddingtop if you need
+    }
+
     return (
         <View style={{ flex: 1 }}>
             <BottomSheet
@@ -276,15 +276,23 @@ export default function ChatDetail({ route }) {
             <Animated.View style={{ flex: 1, opacity: Animated.add(0.3, Animated.multiply(fall, 1)) }}>
                 <GiftedChat
                     messages={messages}
-                    onLoadEarlier={() => {
-                        console.warn('onloadealier')
+                    // onLoadEarlier={() => {
+                    //     console.warn('onloadealier')
+                    // }}
+                    // isLoadingEarlier={isLoadingEarlier}
+                    listViewProps={{
+                        scrollEventThrottle: 40,
+                        onScroll: ({nativeEvent}) => {
+                            if(isCloseToTop(nativeEvent)){
+                                setPaging(prev => prev + 1)
+                                onValueChanged()
+                            }
+                        }
                     }}
-                    isLoadingEarlier={isLoadingEarlier}
                     infiniteScroll={true}
                     user={{
                         _id: user.uid,
                     }}
-                    // inverted={messages.length === 0}
                     messagesContainerStyle={{ transform: [ { scaleY: messages.length === 0 ? -1 : 1 } ] }}
                     renderBubble={renderBubble}
                     renderSend={renderSend}

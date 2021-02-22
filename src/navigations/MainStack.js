@@ -10,7 +10,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 const Tab = createBottomTabNavigator()
 
 const screensWithHiddenTabbar = [
-    "AddPost", "ChatDetail", "EditProfile"
+    "AddPost", "ChatDetail", "EditProfile", "Search"
 ]
 
 export default function MainStack(){
