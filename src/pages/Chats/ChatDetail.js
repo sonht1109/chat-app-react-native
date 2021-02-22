@@ -87,7 +87,6 @@ export default function ChatDetail({ route }) {
     const handleCustomOnSend = async (messageIdGenerator) => {
         if (image || text !== '') {
             let tempImage = image
-            setImage(null)
             const message = {
                 _id: messageIdGenerator(),
                 text: text,
@@ -100,6 +99,7 @@ export default function ChatDetail({ route }) {
                 image: null
             };
             setText('')
+            setImage(null)
             if (tempImage) {
                 let imageUrl = await handleUploadImage(tempImage)
                 message.image = imageUrl
