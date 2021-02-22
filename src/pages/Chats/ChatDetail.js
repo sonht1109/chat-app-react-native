@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Text, TouchableOpacity, View, StyleSheet, Dimensions, Image, ScrollView } from 'react-native';
 import { GiftedChat, Bubble, Send } from 'react-native-gifted-chat';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -93,8 +93,16 @@ export default function ChatDetail({ route }) {
             databaseRef.push({ ...message, pending: false, sent: true });
             // push message to receiver-message
             database().ref('messages').child(guest.uid).child(user.uid).push({ ...message, pending: false, sent: true });
+            //if this is the first message
+            handleIfThisIsTheFirstMessage()
         }
     }
+
+    const handleIfThisIsTheFirstMessage = useCallback(() => {
+        if(messages.length === 0){
+            database().ref('message-to-users').child(guest.uid).push({uid: user.uid})
+        }
+    }, [messages])
 
     const renderSend = (props) => {
         const { sendButtonProps, messageIdGenerator, onSend } = props
